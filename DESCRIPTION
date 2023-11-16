@@ -1,0 +1,23 @@
+Package: tissueResolver
+Title: A package to compute virtual tissues from bulk and single cell data
+Version: 0.0.1
+Authors@R: c( person(given = "Jakob", family = "Simeth", role = c("aut", "cre"), email = "jakob.simeth@ur.de", comment = c(ORCID = "0000-0002-7832-2582")),
+    person(given = "Paul", family = "Hüttl", role = c("ctb"), email = "paul.huettl@ur.de"),
+    person(given = "Marian", family = "Schön", role = c("ctb"), email = "marian.schoen@ur.de"))
+Description: Computes virtual tissues by selecting and weighting provided single cells to mimic a bulk. Virtual tissues can then be analysed similar to single cells.
+License: MIT + file LICENSE
+Encoding: UTF-8
+LazyData: true
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.2.3
+Suggests: 
+    knitr,
+    rmarkdown
+Config/testthat/edition: 3
+Depends:
+    tidyverse,
+    progress,
+    ggplot2,
+    gridExtra,
+    MASS
+VignetteBuilder: knitr
