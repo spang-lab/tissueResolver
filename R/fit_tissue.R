@@ -8,10 +8,12 @@
 #' a bulk sample in each column. Rownames are expected to be gene identifieres.
 #' @param sclibrary dataframe containing a single cell profile in
 #' each column. Rownames are expected to be gene identifieres
+#' @param maxit the iteration limit used in the optimization algorithm, defaults to 2e3
 #'
 #' @return a list containing
-#' tissuemodel: contains the computed cell weights for each bulk sample
-#' fitted_genes: the gene names of fitted genes
+#' - tissuemodel: contains the computed cell weights for each bulk sample
+#' - fitted_genes: the gene names of fitted genes
+#' - log_store: logging info for residual across iterations
 #'
 #' @examples
 #' set.seed(1)
@@ -69,7 +71,7 @@ fit_tissue_noboot <- function(bulkdata, sclibrary) {
   # vector y[,i]
   fn <- function(cell_weights, i) {
     r <- y[,i] - x %*% cell_weights
-    return (sum(r^2))
+    return(sum(r^2))
   }
 
   # grad_fn returns the gradient of fn wrt. to the cell_weights
@@ -82,6 +84,7 @@ fit_tissue_noboot <- function(bulkdata, sclibrary) {
   }
 
   result <- tibble()
+  log_store <- tibble()
 
   # print status depending on bulk samples
   pb <- progress::progress_bar$new(
@@ -96,18 +99,20 @@ fit_tissue_noboot <- function(bulkdata, sclibrary) {
     cell_weights <- rep(1.0, ncells)
 
     # note the box constraint, demanding the cell weights to be non-negative
-    res <- optim(
+    # log for iteration info on residuals and convergence
+    out_log <- capture.output(res <- optim(
               cell_weights,
               fn,
               grad_fn,
               lower = rep(0, ncells),
               method = "L-BFGS-B",
+              control=list(maxit = maxit, trace = 1),
               ibulk
-            )
+            ))
     # message status concerning convergence of optimizer
     convergence <- res$convergence
     if(convergence == 1){
-      stop("iteration limit has been reached")
+      stop(paste0("iteration limit of", maxit, "has been reached"))
     }
     if(convergence == 51){
       stop(res$message)
@@ -126,13 +131,21 @@ fit_tissue_noboot <- function(bulkdata, sclibrary) {
                       bulk_id = bulk_ids[ibulk],
                       cell_id = cell_ids[r > 0.0],
                       weight  = r[r > 0.0]))
+
+    # for each bulk store residuals for all iterations
+    log_store <- rbind(log_store,
+                        tibble(
+                          bulk_id = bulk_ids[ibulk],
+                          log = list(out_log) 
+                        ))
     message("done.")
   }
 
 
   return (list(
     tissuemodel = result,
-    fitted_genes = genes
+    fitted_genes = genes,
+    log_store = log_store
     ))
 }
 
@@ -147,6 +160,7 @@ fit_tissue_noboot <- function(bulkdata, sclibrary) {
 #' a bulk sample in each column. Rownames are expected to be gene identifieres
 #' @param sclibrary dataframe containing a single cell profile in
 #' each column. Rownames are expected to be gene identifieres
+#' @param maxit the iteration limit used in the optimization algorithm, defaults to 2e3
 #' @param bootstrap if set to FALSE fit tissue without bootstrapping.
 #' If set to true select bootstrap_pctcells perecent of cells
 #' and perform bootstrap_nruns of sampling cells and fitting these to bulks
@@ -162,6 +176,7 @@ fit_tissue_noboot <- function(bulkdata, sclibrary) {
 #' - tissuemodels: a list of tissuemodels of every bootstrap run
 #' - fitted_genes: a list of fitted gene names
 #' - result$tissuemodels[[irun]] <- this_model$tissuemodel
+#' - result$log_stores[[irun]] <- this_model$log_store
 #' - bootstrap: TRUE
 #' - bootstrap_nruns: number of bootstrap samples
 #' - bootstrap_pctcells: percentage of all single cells that were used in every bootstrap run
@@ -185,13 +200,13 @@ fit_tissue_noboot <- function(bulkdata, sclibrary) {
 #' colnames(bulks) <- bulknames
 #' colnames(sc) <- cellnames
 #' 
-#' fitted_tissue <- fit_tissue(bulks,sc, bootstrap = TRUE, bootstrap_nruns = 5, bootstrap_pctcells = 50)
+#' fitted_tissue <- fit_tissue(bulks, sc, bootstrap = TRUE, bootstrap_nruns = 5, bootstrap_pctcells = 50)
 #' @export
 #'
-#
 fit_tissue <- function(
                 bulkdata,
                 sclibrary,
+                maxit = 2e3,
                 bootstrap = FALSE,
                 bootstrap_nruns = 50,
                 bootstrap_pctcells = 10) {
@@ -209,6 +224,7 @@ fit_tissue <- function(
                    bootstrap_pctcells = bootstrap_pctcells,
                    bootstrap_ncells = ncells,
                    tissuemodels = list(),
+                   log_stores = list(),
                    fitted_genes = c()
                    )
     for( irun in 1:bootstrap_nruns ){
@@ -217,7 +233,23 @@ fit_tissue <- function(
       take_cells <- sample(colnames(sclibrary), ncells, replace=FALSE)
 
       # fit this sampled library to bulk
-      this_model <- fit_tissue_noboot(bulkdata, sclibrary[,take_cells])
+      this_model <- fit_tissue_noboot(bulkdata, sclibrary[,take_cells], maxit)
+
+      # for each run store fitted_genes and tissuemodels
+      result$fitted_genes <- this_model$fitted_genes
+      result$tissuemodels[[irun]] <- this_model$tissuemodel
+      result$log_stores[[irun]] <- this_model$log_store
+      result$bootstrap <- TRUE
+      result$bootstrap_nruns <- bootstrap_nruns
+      result$bootstrap_pctcells <- bootstrap_pctcells
+    }
+    return(result)
+  } else {
+    tm <- fit_tissue_noboot(bulkdata, sclibrary, maxit)
+    tm$bootstrap <- FALSE
+    return(tm)
+  }
+}
 
       # for each run store fitted_genes and tissuemodels
       result$fitted_genes <- this_model$fitted_genes
