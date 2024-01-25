@@ -71,7 +71,7 @@ fast_specific_expression_regulation <- function(
   }
   # check for correct formatting of mapping
   check_input_mapping(tissuemodel, mapping, by, cell_id)
-  if( is_tibble(sclibrary) ) {
+  if( tibble::is_tibble(sclibrary) ) {
     sclibrary <- df_to_matrix(sclibrary, cols=cell_id)
   }
   # join the by column of mapping to tissuemodel tibble in order to comprise
@@ -307,7 +307,7 @@ explained_expression <- function(
   if(!is_tissuemodel(tissuemodel)) {
     stop("function called with an object that is not a tissuemodel")
   }
-  if( is_tibble(sclibrary) ) {
+  if( tibble::is_tibble(sclibrary) ) {
     sclibrary <- df_to_matrix(sclibrary, cols=cell_id)
   }
   celldf <- tissuemodel$tissuemodel

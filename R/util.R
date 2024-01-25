@@ -144,7 +144,7 @@ check_input_dimensions <- function(y, x) {
 #'   cell_id = "cell_id"
 #' )
 check_input_se <- function(celldf, sclibrary, by, weight, bulk_id, cell_id) {
-  if (!is_tibble(celldf)) {
+  if (!tibble::is_tibble(celldf)) {
     stop("celldf must be a tibble")
   }
   if (!all(sapply(celldf %>% pull(cell_id), function(x) {

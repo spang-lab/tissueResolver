@@ -136,7 +136,7 @@ kde2d_weighted <- function (
 #' 
 #
 bulk_group_input <- function(bulkgroups, bulkidcol = "bulk_id", groupcol="group") {
-  if(is_tibble(bulkgroups)) {
+  if(tibble::is_tibble(bulkgroups)) {
     if( ! bulkidcol %in% names(bulkgroups)) {
       stop(paste0(bulkidcol, " is not a column of the bulk group definition dataframe"))
     }
@@ -222,7 +222,7 @@ density_distribution <- function(
   if( is_tissuemodel(tissuemodel) ) {
     tissuemodel <- tissuemodel$tissuemodel
   # can also deal with only tissuemodel tibble, then no filtering necessary 
-  } else if( ! is_tibble(tissuemodel) ) {
+  } else if( ! tibble::is_tibble(tissuemodel) ) {
     stop("tissuemodel is not a tissuemodel or dataframe")
   }
   
@@ -396,7 +396,7 @@ plot_element_embedding <- function(scembedding, x="UMAP1", y="UMAP2",colourby=NU
       stop(paste0(colourby, " is not a column of scembedding."))
     }
     return(
-      geom_point(data=scembedding, aes(x=.data[[x]], y=.data[[y]], colour=as_factor(.data[[colourby]])), alpha=0.5)
+      geom_point(data=scembedding, aes(x=.data[[x]], y=.data[[y]], colour=forcats::as_factor(.data[[colourby]])), alpha=0.5)
     )
   }
 }
@@ -567,7 +567,7 @@ plot_differential_densities <- function(
                                   embedding.x = "UMAP1",
                                   embedding.y = "UMAP2",
                                   colourby=NULL) {
-  if( ! is_tibble(densitydata) || ! all(c("x", "y", "z", "group") %in% names(densitydata))) {
+  if( ! tibble::is_tibble(densitydata) || ! all(c("x", "y", "z", "group") %in% names(densitydata))) {
     stop("invalid densitydata. must have columns x, y, z and groups.")
   }
   # prepare differential density plot for two groups

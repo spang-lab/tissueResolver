@@ -183,7 +183,7 @@ cell_proportions <- function(
                 rowwise() %>%
                 mutate(tmpweight_boot = list(c(tmpweight_boot, current_weight))) %>%
                 # set NAs to 0, i.e. cells which are not drawn
-                mutate(tmpweight_boot = list(replace_na(tmpweight_boot,0))) %>%
+                mutate(tmpweight_boot = list(tidyr::replace_na(tmpweight_boot,0))) %>%
                 dplyr::select(-current_weight)
 
     }

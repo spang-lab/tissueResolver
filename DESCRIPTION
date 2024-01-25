@@ -15,9 +15,13 @@ Suggests:
     rmarkdown
 Config/testthat/edition: 3
 Depends:
-    tidyverse,
+    dplyr,
+    tibble,
+    tidyr,
+    forcats,
     progress,
     ggplot2,
     gridExtra,
-    MASS
+    MASS,
+    parallel
 VignetteBuilder: knitr
