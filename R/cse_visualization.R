@@ -146,15 +146,15 @@ plot_csre <- function(
   diff <- groupavg %>%
     # join group avarage and total explained avarage 
     # and add the total_expr column giving the total expression across cells
-    inner_join(total_explained %>% rename(total_expr = avgexpr), by=c("group", "gene")) %>%
+    inner_join(total_explained %>% dplyr::rename(total_expr = avgexpr), by=c("group", "gene")) %>%
     # give avgexpr, avgreg and total_expr separate columns for both bulkgroups A and B
     pivot_wider(names_from = group, values_from=c(avgexpr, avgregulation, total_expr), names_prefix="group_", values_fill = 0.0) %>%
-    rename(avgexpr_A = paste0("avgexpr_group_", groupA)) %>%
-    rename(avgexpr_B = paste0("avgexpr_group_", groupB)) %>%
-    rename(avgregulation_A = paste0("avgregulation_group_", groupA)) %>%
-    rename(avgregulation_B = paste0("avgregulation_group_", groupB)) %>%
-    rename(total_expr_A = paste0("total_expr_group_", groupA)) %>%
-    rename(total_expr_B = paste0("total_expr_group_", groupB)) %>%
+    dplyr::rename(avgexpr_A = paste0("avgexpr_group_", groupA)) %>%
+    dplyr::rename(avgexpr_B = paste0("avgexpr_group_", groupB)) %>%
+    dplyr::rename(avgregulation_A = paste0("avgregulation_group_", groupA)) %>%
+    dplyr::rename(avgregulation_B = paste0("avgregulation_group_", groupB)) %>%
+    dplyr::rename(total_expr_A = paste0("total_expr_group_", groupA)) %>%
+    dplyr::rename(total_expr_B = paste0("total_expr_group_", groupB)) %>%
     # for each row (comprising gene,celltype) give logp1 difference of avgexpr, avgreg and total_expr
     mutate(logdiffexpr = log2((avgexpr_A+1.0) / (avgexpr_B+1.0))) %>%
     mutate(logdiffreg = log2((avgregulation_A+1.0) / (avgregulation_B+1.0))) %>%
@@ -237,7 +237,7 @@ plot_csre <- function(
       mutate(logexpr = log2(avgexpr+1.0)) %>%
       dplyr::select(-avgexpr) %>%
       pivot_wider(names_from=group, values_from=logexpr) %>%
-      rename(group_A = groupA, group_B = groupB) %>%
+      dplyr::rename(group_A = groupA, group_B = groupB) %>%
       mutate(logdiff=group_A-group_B) %>%
       ggplot(aes(x=logdiff, y=factor(gene, rev(ord_genes)))) +
       geom_bar(stat="identity", position="stack") +
@@ -258,7 +258,7 @@ plot_csre <- function(
       filter(celltype != "total_explained") %>%
       # give both groups their own column
       pivot_wider(names_from = group, values_from =  avgexpr, values_fill=0) %>%
-      rename(group_A = all_of(groupA), group_B = all_of(groupB)) %>%
+      dplyr::rename(group_A = all_of(groupA), group_B = all_of(groupB)) %>%
       group_by(gene) %>%
         # cumulate the avgexpr for each gene in the relgroup across celltypes
         mutate(normsum = sum(.data[[relgroup]])) %>%

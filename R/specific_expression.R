@@ -236,9 +236,9 @@ specific_expression_regulation <- function(
         dplyr::select(-expression.x, -expression.y, -regulation.x, -regulation.y)
     }
     # add column storing mean over all bootstrapped expressions and regulations
-    csre <- csre %>% rename(expression_boot = expression) %>%
+    csre <- csre %>% dplyr::rename(expression_boot = expression) %>%
       mutate(expression = mean(expression_boot)) %>%
-      rename(regulation_boot = regulation) %>%
+      dplyr::rename(regulation_boot = regulation) %>%
       mutate(regulation = mean(regulation_boot))
     return(csre)
   } else {

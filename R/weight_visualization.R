@@ -488,8 +488,8 @@ plot_element_differential_density <- function(
     # give each group a separate column
     pivot_wider(names_from=all_of(group), values_from=all_of(z), names_prefix="group_") %>%
     # give both groups the names specified by the input groups
-    rename(groupA = all_of(paste0("group_", groupA))) %>%
-    rename(groupB = all_of(paste0("group_", groupB))) %>%
+    dplyr::rename(groupA = all_of(paste0("group_", groupA))) %>%
+    dplyr::rename(groupB = all_of(paste0("group_", groupB))) %>%
     # store the differential density between groupA and groupB in the column diff
     mutate(diff = groupA - groupB) %>%
     # delete the seperate densities and keep only the differential density

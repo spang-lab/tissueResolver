@@ -80,7 +80,7 @@ cell_proportions_singlemodel <- function(
     mutate(wsum=sum(weight)) %>% 
     # discard redundant entries
     dplyr::select(dplyr::all_of(c(bulk_id, by, "wsum"))) %>% unique() %>%
-    rename(weight = wsum)
+    dplyr::rename(weight = wsum)
   return(props)
 }
 
@@ -161,7 +161,7 @@ cell_proportions <- function(
                             by,
                             weight,
                             bulk_id, 
-                            cell_id) %>% rename (tmpweight_boot = weight)
+                            cell_id) %>% dplyr::rename (tmpweight_boot = weight)
     for( irun in 2:tissuemodel$bootstrap_nruns ){
       message(paste0("Computing cell proportions for bootstrap sample ", irun, " / ", tissuemodel$bootstrap_nruns))
       # fetch the tissuemodel of the irun-th bootstrap run
@@ -175,7 +175,7 @@ cell_proportions <- function(
                       by,
                       weight,
                       bulk_id,
-                      cell_id) %>% rename(current_weight = weight)
+                      cell_id) %>% dplyr::rename(current_weight = weight)
       # join the bootstrapped cell population weights as list to the props dataframe
       # within a column "tmpweight_boot"
       props <-  props %>%
@@ -190,11 +190,11 @@ cell_proportions <- function(
 
     props <-  props %>% 
               mutate(tmpweight = mean(tmpweight_boot)) %>%
-              # rename tmpweight with weight and tmp_boot with weight_boot
-              rename(!!weight := tmpweight, !!paste0(weight, "_boot") := tmpweight_boot)
+              # dplyr::rename tmpweight with weight and tmp_boot with weight_boot
+              dplyr::rename(!!weight := tmpweight, !!paste0(weight, "_boot") := tmpweight_boot)
               # quoname is deprecated
-              # rename(!!quo_name(weight) := tmpweight) %>%
-              # rename(!!quo_name(paste0(weight, "_boot")) := tmpweight_boot)
+              # dplyr::rename(!!quo_name(weight) := tmpweight) %>%
+              # dplyr::rename(!!quo_name(paste0(weight, "_boot")) := tmpweight_boot)
     return(props)
   } else {
     return(cell_proportions_singlemodel(tissuemodel, mapping, by, weight, bulk_id, cell_id))
