@@ -173,9 +173,9 @@ fit_tissue_noboot <- function(bulkdata, sclibrary, maxit = 2e3, ncores = 1) {
 #' Allows for bootstrapping specified percentage of cells.
 #' The bulks are fit in parallel on multiple cores
 #'
-#' @param bulkdata dataframe containing the gene expression of
+#' @param bulkdata matrix containing the gene expression of
 #' a bulk sample in each column. Rownames are expected to be gene identifieres
-#' @param sclibrary dataframe containing a single cell profile in
+#' @param sclibrary tibble or matrix containing a single cell profile in
 #' each column. Rownames are expected to be gene identifieres
 #' @param maxit the iteration limit used in the optimization algorithm, defaults to 2e3
 #' @param bootstrap if set to FALSE fit tissue without bootstrapping.
