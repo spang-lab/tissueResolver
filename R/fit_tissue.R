@@ -5,11 +5,12 @@
 #' The bulks are fit in parallel on multiple cores
 #'
 #'
-#' @param bulkdata dataframe containing the gene expression of
+#' @param bulkdata matrix containing the gene expression of
 #' a bulk sample in each column. Rownames are expected to be gene identifieres.
-#' @param sclibrary dataframe containing a single cell profile in
+#' @param sclibrary tibble or matrix containing a single cell profile in
 #' each column. Rownames are expected to be gene identifieres
-#' @param maxit the iteration limit used in the optimization algorithm, defaults to 2e3
+#' @param maxit the iteration limit used in the optimization algorithm, defaults to 2e4. This is very dataset specific,
+#' so if the provided value is not sufficient we advise to increase this value.
 #' @param ncores the number of cores for parallel computation
 #'
 #' @return a list containing
@@ -247,7 +248,7 @@ fit_tissue <- function(bulkdata,
     for (irun in 1:bootstrap_nruns) {
       message(paste0("bootstrap run ", irun, " of ", bootstrap_nruns, " (using ", ncells, " cells)"))
       # sample ncells from the sc library (sample is different in each run)
-      take_cells <- sample(colnames(sclibrary), ncells, replace = FALSE)
+      take_cells <- sample(colnames(sclibrary), ncells, replace = TRUE)
 
       # fit this sampled library to bulk
       this_model <- fit_tissue_noboot(bulkdata, sclibrary[, take_cells], maxit, ncores)
