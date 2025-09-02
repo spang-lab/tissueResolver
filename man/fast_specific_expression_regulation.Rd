@@ -42,7 +42,9 @@ while the regulation column corresponds to the average expression of a single ce
 This function provides the main computations accessed by specific_expression_regulation
 }
 \examples{
-set.seed(1)
+library(dplyr)
+library(tibble)
+set.seed(42)
 ngenes <- 4
 nbulks <- 3
 ncells <- 5

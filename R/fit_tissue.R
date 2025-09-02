@@ -19,7 +19,7 @@
 #' -log_store: logging info for residual across iterations
 #'
 #' @examples
-#' set.seed(1)
+#' set.seed(42)
 #' ngenes <- 4
 #' nbulks <- 3
 #' ncells <- 5
@@ -94,7 +94,7 @@ fit_tissue_noboot <- function(bulkdata, sclibrary, maxit = 2e3, ncores = 1) {
 
     # note the box constraint, demanding the cell weights to be non-negative
     # log for iteration info on residuals and convergence
-    out_log <- capture.output(res <- optim(
+    out_log <- utils::capture.output(res <- stats::optim(
       cell_weights,
       fn,
       grad_fn,
@@ -120,14 +120,14 @@ fit_tissue_noboot <- function(bulkdata, sclibrary, maxit = 2e3, ncores = 1) {
 
     # for each bulk, result stores the so called tissuemodel, i.e.,
     # the cells and corresponding weights whenever strictly positive
-    result <- tibble(
+    result <- tibble::tibble(
       bulk_id = bulk_id,
       cell_id = cell_ids[r > 0.0],
       weight  = r[r > 0.0]
     )
 
     # for each bulk store residuals for all iterations
-    log_store <- tibble(
+    log_store <- tibble::tibble(
       bulk_id = bulk_id,
       log = list(out_log)
     )
@@ -141,10 +141,10 @@ fit_tissue_noboot <- function(bulkdata, sclibrary, maxit = 2e3, ncores = 1) {
   }
   # parallel execution of fitting bulks on ncores
   # bind all results together, note that mclapply keeps order of bulks
-  all_fits <- mclapply(bulk_ids, fit_one_bulk, mc.cores = min(ncores, length(bulk_ids)))
+  all_fits <- parallel::mclapply(bulk_ids, fit_one_bulk, mc.cores = min(ncores, length(bulk_ids)))
 
-  result <- tibble()
-  log_store <- tibble()
+  result <- tibble::tibble()
+  log_store <- tibble::tibble()
 
   for (i in 1:ncol(y)) {
     result <- rbind(
@@ -200,7 +200,7 @@ fit_tissue_noboot <- function(bulkdata, sclibrary, maxit = 2e3, ncores = 1) {
 #'
 #'
 #' @examples
-#' set.seed(1)
+#' set.seed(42)
 #' ngenes <- 4
 #' nbulks <- 3
 #' ncells <- 5
@@ -217,7 +217,14 @@ fit_tissue_noboot <- function(bulkdata, sclibrary, maxit = 2e3, ncores = 1) {
 #' colnames(bulks) <- bulknames
 #' colnames(sc) <- cellnames
 #'
-#' fitted_tissue <- fit_tissue(bulks, sc, bootstrap = TRUE, bootstrap_nruns = 5, bootstrap_pctcells = 50, ncores = 2)
+#' fitted_tissue <- fit_tissue(
+#'    bulks,
+#'    sc,
+#'    bootstrap = TRUE,
+#'    bootstrap_nruns = 5,
+#'    bootstrap_pctcells = 50,
+#'    ncores = 2
+#'  )
 #' @export
 #'
 fit_tissue <- function(bulkdata,
@@ -227,13 +234,26 @@ fit_tissue <- function(bulkdata,
                            bootstrap_nruns = 50,
                            bootstrap_pctcells = 10,
                            ncores = 1) {
+
+  if (!is.numeric(maxit)) {
+      stop("maxit is not a number!")
+    }
+
   if (bootstrap == TRUE) {
+    # some input checking
     if (!is.numeric(bootstrap_nruns)) {
       stop("bootstrap_nruns is not a number!")
     }
     if (!is.numeric(bootstrap_pctcells)) {
       stop("bootstrap_pctcells is not a number!")
     }
+    if (bootstrap_pctcells < 1 || bootstrap_pctcells > 100) {
+      stop("bootstrap_pctcells must be between 1 and 100!")
+    }
+    if (bootstrap_nruns < 2) {
+      stop("bootstrap_nruns must be at least 2!")
+    }
+
     # select only a certain percentage of cells for bootstrapping
     ncells <- round(ncol(sclibrary) * bootstrap_pctcells / 100)
     result <- list(
@@ -245,13 +265,22 @@ fit_tissue <- function(bulkdata,
       log_stores = list(),
       fitted_genes = c()
     )
+
+    message(
+      paste0("Fitting tissue models for ", bootstrap_nruns, " bootstrap runs: ")
+      )
+
+    # set up progress bar
+    pb <- utils::txtProgressBar(min = 0, max = bootstrap_nruns, initial = 0, style = 3)
+
     for (irun in 1:bootstrap_nruns) {
-      message(paste0("bootstrap run ", irun, " of ", bootstrap_nruns, " (using ", ncells, " cells)"))
       # sample ncells from the sc library (sample is different in each run)
       take_cells <- sample(colnames(sclibrary), ncells, replace = TRUE)
 
       # fit this sampled library to bulk
-      this_model <- fit_tissue_noboot(bulkdata, sclibrary[, take_cells], maxit, ncores)
+      this_model <- suppressMessages(
+        fit_tissue_noboot(bulkdata, sclibrary[, take_cells], maxit, ncores)
+        )
 
       # for each run store fitted_genes and tissuemodels
       result$fitted_genes <- this_model$fitted_genes
@@ -260,11 +289,18 @@ fit_tissue <- function(bulkdata,
       result$bootstrap <- TRUE
       result$bootstrap_nruns <- bootstrap_nruns
       result$bootstrap_pctcells <- bootstrap_pctcells
+
+      # update progress bar
+      utils::setTxtProgressBar(pb, irun)
     }
+    message("\t")
     return(result)
+
   } else {
+    message("Fitting tissue models without bootstrapping:")
     tm <- fit_tissue_noboot(bulkdata, sclibrary, maxit, ncores)
     tm$bootstrap <- FALSE
     return(tm)
   }
 }
+

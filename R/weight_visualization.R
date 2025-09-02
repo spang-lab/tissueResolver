@@ -21,7 +21,7 @@
 #' library(tissueResolver)
 #' library(ggplot2)
 #' 
-#' set.seed(1)
+#' set.seed(42)
 #' n <- 10
 #' tmp.frame <- data.frame(
 #'   x = c(rep(x = 1, n = 3), rep(x = 2, n = 3), rep(x = 3, n = 3)), 
@@ -93,9 +93,9 @@ kde2d_weighted <- function (
   left.mat <- matrix(rep(weight, n.grid), nrow = n.grid, ncol = n.x, byrow = TRUE)
 
   # matrices for the kernel
-  middle.mat <- matrix(dnorm(distance.x), n.grid, n.x)
-  right.mat <- matrix(dnorm(distance.y), n.grid, n.x)
-  
+  middle.mat <- matrix(stats::dnorm(distance.x), n.grid, n.x)
+  right.mat <- matrix(stats::dnorm(distance.y), n.grid, n.x)
+
   # weighted kde differs from classical kde by multiplying the kernel with weight matrix
   # and dividing by the cumulated weights
   # for classical kde, see Section 5.6 in 
@@ -124,15 +124,24 @@ kde2d_weighted <- function (
 #' # Case 1
 #' bulkgroups <- c("b1" = "group_1", "b2" = "group_2", "b3" = "group_3")
 #' 
-#' bulk_group_input_1 <- tissueResolver:::bulk_group_input(bulkgroups, bulkidcol = "bulk_id", groupcol = "group")
+#' bulk_group_input_1 <- tissueResolver:::bulk_group_input(
+#'    bulkgroups,
+#'    bulkidcol = "bulk_id",
+#'    groupcol = "group"
+#' )
 #' 
 #' # Case 2
+#' library(tibble)
 #' bulkgroups <- tibble(
 #'   "bulk_id" = c("b1", "b2", "b3"),
 #'   "group" = c("group_1", "group_2", "group_3")
 #' )
 #' 
-#' bulk_group_input_2 <- tissueResolver:::bulk_group_input(bulkgroups, bulkidcol = "bulk_id", groupcol = "group")
+#' bulk_group_input_2 <- tissueResolver:::bulk_group_input(
+#'    bulkgroups,
+#'    bulkidcol = "bulk_id",
+#'    groupcol = "group"
+#' )
 #' 
 #
 bulk_group_input <- function(bulkgroups, bulkidcol = "bulk_id", groupcol="group") {
@@ -175,7 +184,8 @@ bulk_group_input <- function(bulkgroups, bulkidcol = "bulk_id", groupcol="group"
 #' @return dataframe with a kde density z-value for every x, y coordinate and an additional group column
 #' 
 #' @examples 
-#' set.seed(1)
+#' library(tibble)
+#' set.seed(42)
 #' scembedding <- data.frame(
 #'   "colnames" = paste0("cell_", 1:9),
 #'   # "colnames" = c(paste0("cell_", 1:3), paste0("cell_", 1:3), paste0("cell_", 1:3)),
@@ -307,7 +317,7 @@ density_distribution <- function(
     )
   }
   
-  densities <- tibble()
+  densities <- tibble::tibble()
 
   for(groupid in unique.groups){
     # filter the bulk ids from the boulkgroup mapping belonging to one group
@@ -346,12 +356,13 @@ density_distribution <- function(
 
     # store for each group the density matrix of the kde,
     # where the weight vector is given by the mean cell weight for each cell within this group
-    densities <- rbind(densities,
-      as_tibble(tissueResolver:::kde2d_weighted(
-                         x = scembedding[[x]]
-                       , y = scembedding[[y]]
-                       , weight = weights.for.all.cells
-                       )) %>% mutate(group = groupid))
+    densities <- rbind(
+      densities,
+      tibble::as_tibble(kde2d_weighted(
+          x = scembedding[[x]],
+          y = scembedding[[y]],
+          weight = weights.for.all.cells
+      )) %>% dplyr::mutate(group = groupid))
   }
   return(densities)
 }
@@ -366,6 +377,7 @@ density_distribution <- function(
 #' @return a ggplot plot object that can further be customized, viewed or saved in a file. see ggplot2.
 #'
 #' @examples
+#' library(ggplot2)
 #' scembedding <- data.frame(
 #'   "colnames" = paste0("cell_", 1:9),
 #'   "UMAP1" = c(rep(x = 1, n = 3), rep(x = 2, n = 3), rep(x = 3, n = 3)),
@@ -389,14 +401,28 @@ density_distribution <- function(
 plot_element_embedding <- function(scembedding, x="UMAP1", y="UMAP2",colourby=NULL) {
   if( is.null(colourby) ) {
     return(
-      geom_point(data=scembedding, aes(x=.data[[x]], y=.data[[y]]), alpha=0.5)
+      ggplot2::geom_point(
+        data=scembedding, 
+        ggplot2::aes(
+          x=.data[[x]],
+          y=.data[[y]]
+        ),
+        alpha=0.5)
     )
   } else {
     if(! colourby %in% names(scembedding)) {
       stop(paste0(colourby, " is not a column of scembedding."))
     }
     return(
-      geom_point(data=scembedding, aes(x=.data[[x]], y=.data[[y]], colour=forcats::as_factor(.data[[colourby]])), alpha=0.5)
+      ggplot2::geom_point(
+        data=scembedding,
+        ggplot2::aes(
+          x=.data[[x]],
+          y=.data[[y]],
+          colour=forcats::as_factor(.data[[colourby]])
+        ),
+        alpha=0.5
+      )
     )
   }
 }
@@ -415,7 +441,9 @@ plot_element_embedding <- function(scembedding, x="UMAP1", y="UMAP2",colourby=NU
 #' 
 #' @return a ggplot plot object that can further be customized, viewed or saved in a file. see ggplot2.
 #' @examples 
-#' set.seed(1)
+#' library(tibble)
+#' library(ggplot2)
+#' set.seed(42)
 #' scembedding <- data.frame(
 #'   "colnames" = paste0("cell_", 1:9),
 #'   # "colnames" = c(paste0("cell_", 1:3), paste0("cell_", 1:3), paste0("cell_", 1:3)),
@@ -469,9 +497,9 @@ plot_element_differential_density <- function(
   # specify the NA group as the remaining group
   if( ngroups == 2 ){
     if( is.na(groupA) && (! is.na(groupB)) ){
-      groupA <- setdiff(groups, groupB)
+      groupA <- dplyr::setdiff(groups, groupB)
     } else if(is.na(groupB) && (! is.na(groupA))) {
-      groupB <- setdiff(groups, groupA)
+      groupB <- dplyr::setdiff(groups, groupA)
     }
   } else if( is.na(groupA) || is.na(groupB) ){
     stop("no groups given. explicitly set groupA and groupB.")
@@ -484,19 +512,29 @@ plot_element_differential_density <- function(
   # compute the differential densities for the two given groups
   diffdensity <- densities %>% 
     # filter only the rows of the df belonging to the two groups
-    filter(.data[[group]] %in% c(groupA, groupB)) %>%
+    dplyr::filter(.data[[group]] %in% c(groupA, groupB)) %>%
     # give each group a separate column
-    pivot_wider(names_from=all_of(group), values_from=all_of(z), names_prefix="group_") %>%
+    tidyr::pivot_wider(
+      names_from=dplyr::all_of(group),
+      values_from=dplyr::all_of(z),
+      names_prefix="group_") %>%
     # give both groups the names specified by the input groups
-    dplyr::rename(groupA = all_of(paste0("group_", groupA))) %>%
-    dplyr::rename(groupB = all_of(paste0("group_", groupB))) %>%
+    dplyr::rename(groupA = dplyr::all_of(paste0("group_", groupA))) %>%
+    dplyr::rename(groupB = dplyr::all_of(paste0("group_", groupB))) %>%
     # store the differential density between groupA and groupB in the column diff
-    mutate(diff = groupA - groupB) %>%
+    dplyr::mutate(diff = groupA - groupB) %>%
     # delete the seperate densities and keep only the differential density
-    dplyr::select(all_of(c(x,y,"diff")))
+    dplyr::select(dplyr::all_of(c(x,y,"diff")))
   return(
     # represent the density as coloured tiles
-    geom_tile(data=diffdensity, aes(x=.data[[x]], y=.data[[y]], fill=diff))
+    ggplot2::geom_tile(
+      data=diffdensity,
+      ggplot2::aes(
+        x=.data[[x]],
+        y=.data[[y]],
+        fill=diff
+        )
+      )
   )
 }
 
@@ -520,7 +558,9 @@ plot_element_differential_density <- function(
 #' @return a ggplot plot object that can further be customized, viewed or saved in a file. see ggplot2.
 #' 
 #' @examples
-#' set.seed(1)
+#' library(tibble)
+#' library(ggplot2)
+#' set.seed(42)
 #' scembedding <- data.frame(
 #'   "colnames" = paste0("cell_", 1:9),
 #'   # "colnames" = c(paste0("cell_", 1:3), paste0("cell_", 1:3), paste0("cell_", 1:3)),
@@ -590,8 +630,9 @@ plot_differential_densities <- function(
 
   # produce one ggplot object containing all three plots
   return(
-    ggplot() +
-    diffdensity + scale_fill_gradient2(low="blue", mid="white", high="red") +
+    ggplot2::ggplot() +
+    diffdensity + 
+    ggplot2::scale_fill_gradient2(low="blue", mid="white", high="red") +
     embedding
   )
 }

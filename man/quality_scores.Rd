@@ -23,7 +23,8 @@ Computes gene-specific and sample-specific quality scores:
 This function computes the mean relative residual and avarage bootstrap variance for each gene and each bulk sample.
 }
 \examples{
-set.seed(1)
+library(tibble)
+set.seed(42)
 ngenes <- 4
 nbulks <- 3
 ncells <- 5
@@ -45,8 +46,13 @@ grouping <- tibble(
   "bulk_id" = c("bulk_1", "bulk_2", "bulk_3"),
   "group" = c("bgroup_1", "bgroup_2", "bgroup_1")
 )
-fitted_tissue <- fit_tissue(bulks, sc, bootstrap = TRUE, bootstrap_nruns = 5, bootstrap_pctcells = 50)
-
+fitted_tissue <- fit_tissue(
+  bulks,
+  sc,
+  bootstrap = TRUE,
+  bootstrap_nruns = 5,
+  bootstrap_pctcells = 50
+)
 csre <- specific_expression_regulation(
   tissuemodel = fitted_tissue,
   sclibrary = sc,

@@ -16,7 +16,7 @@ TRUE if it is a tissuemodel, FALSE otherwise
 checks if the object is a tissuemodel as returned by fit_tissue_noboot
 }
 \examples{
-set.seed(1)
+set.seed(42)
 ngenes <- 4
 nbulks <- 3
 ncells <- 5

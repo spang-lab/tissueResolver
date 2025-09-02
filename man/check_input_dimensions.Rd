@@ -17,7 +17,7 @@ Checks if the number
 of genes of bulk data and the single cell library match.
 }
 \examples{
-set.seed(1)
+set.seed(42)
 ngenes <- 4
 nbulks <- 3
 ncells <- 5

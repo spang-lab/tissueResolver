@@ -11,13 +11,14 @@ The bulks are fit in parallel on multiple cores}
 fit_tissue_noboot(bulkdata, sclibrary, maxit = 2000, ncores = 1)
 }
 \arguments{
-\item{bulkdata}{dataframe containing the gene expression of
+\item{bulkdata}{matrix containing the gene expression of
 a bulk sample in each column. Rownames are expected to be gene identifieres.}
 
-\item{sclibrary}{dataframe containing a single cell profile in
+\item{sclibrary}{tibble or matrix containing a single cell profile in
 each column. Rownames are expected to be gene identifieres}
 
-\item{maxit}{the iteration limit used in the optimization algorithm, defaults to 2e3}
+\item{maxit}{the iteration limit used in the optimization algorithm, defaults to 2e4. This is very dataset specific,
+so if the provided value is not sufficient we advise to increase this value.}
 
 \item{ncores}{the number of cores for parallel computation}
 }
@@ -35,7 +36,7 @@ optimally match the bulk gene expressions
 The bulks are fit in parallel on multiple cores
 }
 \examples{
-set.seed(1)
+set.seed(42)
 ngenes <- 4
 nbulks <- 3
 ncells <- 5

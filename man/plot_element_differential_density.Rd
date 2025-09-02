@@ -38,7 +38,9 @@ can assess the difference in densities between two of these groups. This differe
 If group labels are omitted, they are tried to be guessed (if only two groups exist).
 }
 \examples{
-set.seed(1)
+library(tibble)
+library(ggplot2)
+set.seed(42)
 scembedding <- data.frame(
   "colnames" = paste0("cell_", 1:9),
   # "colnames" = c(paste0("cell_", 1:3), paste0("cell_", 1:3), paste0("cell_", 1:3)),

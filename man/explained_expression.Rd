@@ -35,7 +35,8 @@ computes the TOTAL explained expression, i.e., the specific gene expression with
 I.e., it uses the weights computed in fit tissue to determine the explained specific expression of each gene in each bulk sample without grouping cells.
 }
 \examples{
-set.seed(1)
+library(tibble)
+set.seed(42)
 ngenes <- 4
 nbulks <- 3
 ncells <- 5

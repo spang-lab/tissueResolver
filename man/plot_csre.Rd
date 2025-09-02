@@ -47,8 +47,10 @@ ggplot object
 This function generates several bar and heatmapplots for comparing cell type specific expression comparing two bulk groups.
 }
 \examples{
-library(gridExtra)
-set.seed(1)
+library(tibble)
+library(dplyr)
+library(tidyr)
+set.seed(42)
 ngenes <- 4
 nbulks <- 3
 ncells <- 5

@@ -20,10 +20,10 @@ fit_tissue(
 )
 }
 \arguments{
-\item{bulkdata}{dataframe containing the gene expression of
+\item{bulkdata}{matrix containing the gene expression of
 a bulk sample in each column. Rownames are expected to be gene identifieres}
 
-\item{sclibrary}{dataframe containing a single cell profile in
+\item{sclibrary}{tibble or matrix containing a single cell profile in
 each column. Rownames are expected to be gene identifieres}
 
 \item{maxit}{the iteration limit used in the optimization algorithm, defaults to 2e3}
@@ -63,7 +63,7 @@ Allows for bootstrapping specified percentage of cells.
 The bulks are fit in parallel on multiple cores
 }
 \examples{
-set.seed(1)
+set.seed(42)
 ngenes <- 4
 nbulks <- 3
 ncells <- 5
@@ -80,5 +80,12 @@ rownames(sc) <- genenames_sc
 colnames(bulks) <- bulknames
 colnames(sc) <- cellnames
 
-fitted_tissue <- fit_tissue(bulks, sc, bootstrap = TRUE, bootstrap_nruns = 5, bootstrap_pctcells = 50, ncores = 2)
+fitted_tissue <- fit_tissue(
+   bulks,
+   sc,
+   bootstrap = TRUE,
+   bootstrap_nruns = 5,
+   bootstrap_pctcells = 50,
+   ncores = 2
+ )
 }

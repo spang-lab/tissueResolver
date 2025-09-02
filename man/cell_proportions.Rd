@@ -34,7 +34,8 @@ The weight column holds the mean over the bootstrap runs across each bulk-cellty
 returns the sum over weights of certain cell populations for each bootstrap (if enabled) run performed in fit_tissue
 }
 \examples{
-set.seed(1)
+library(tibble)
+set.seed(42)
 ngenes <- 4
 nbulks <- 3
 ncells <- 5

@@ -42,7 +42,7 @@ rm(list = ls()); gc()
 library(tissueResolver)
 library(ggplot2)
 
-set.seed(1)
+set.seed(42)
 n <- 10
 tmp.frame <- data.frame(
   x = c(rep(x = 1, n = 3), rep(x = 2, n = 3), rep(x = 3, n = 3)), 

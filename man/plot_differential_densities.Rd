@@ -40,7 +40,9 @@ Besides the differential densities the plot contains the visualization of the si
 and a contour plot illustrating the density of each bulk group
 }
 \examples{
-set.seed(1)
+library(tibble)
+library(ggplot2)
+set.seed(42)
 scembedding <- data.frame(
   "colnames" = paste0("cell_", 1:9),
   # "colnames" = c(paste0("cell_", 1:3), paste0("cell_", 1:3), paste0("cell_", 1:3)),

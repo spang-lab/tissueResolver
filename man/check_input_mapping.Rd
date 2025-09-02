@@ -17,7 +17,13 @@ check_input_mapping(tissuemodel, mapping, by, cell_id)
 }
 \value{
 nothing
-set.seed(1)
+}
+\description{
+checks if the mapping dataframe is a valid mapping for the cells in tissuemodel
+}
+\examples{
+library(tibble)
+set.seed(42)
 ngenes <- 4
 nbulks <- 3
 ncells <- 5
@@ -32,15 +38,13 @@ rownames(sc) <- genenames_sc
 colnames(bulks) <- bulknames
 colnames(sc) <- cellnames
 
-fitted_tissue <- fit_tissue_noboot(bulks, sc)
+fitted_tissue <- tissueResolver:::fit_tissue_noboot(bulks, sc)
 
 mapping <- tibble(
-cell_id = cellnames,
-celltype = c("CTA", "CTB", "CTA", "CTB", "CTA")
+  cell_id = cellnames,
+  celltype = c("CTA", "CTB", "CTA", "CTB", "CTA")
 )
 
-check_input_mapping(fitted_tissue, mapping, by = "cell_id", cell_id = "cell_id")
-}
-\description{
-checks if the mapping dataframe is a valid mapping for the cells in tissuemodel
+tissueResolver:::check_input_mapping(fitted_tissue, mapping, by = "cell_id", cell_id = "cell_id")
+
 }

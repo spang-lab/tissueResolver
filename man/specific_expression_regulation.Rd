@@ -41,7 +41,8 @@ normalization of the expression column is such that the total expression of a ge
 while the regulation column corresponds to the average expression of a single cell of that type.
 }
 \examples{
-set.seed(1)
+library(tibble)
+set.seed(42)
 ngenes <- 4
 nbulks <- 3
 ncells <- 5

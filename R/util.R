@@ -1,3 +1,9 @@
+## namespace: start
+#' @importFrom dplyr %>%
+#' @importFrom rlang := .data
+## namespace: end
+NULL
+
 #' Restricts rows of two matrices to the set of common genes
 #' and brings them in the same ordering.
 #' Additionally it will report if less than 20% of the genes are in common
@@ -9,7 +15,7 @@
 #' but restricted to the set of common genes
 #' 
 #' @examples
-#' set.seed(1)
+#' set.seed(42)
 #' ngenes <- 4
 #' nbulks <- 3
 #' ncells <- 5
@@ -66,7 +72,7 @@ promote_matrix <- function(v) {
 #' @param y matrix representing the single cell library
 #'
 #' @examples 
-#' set.seed(1)
+#' set.seed(42)
 #' ngenes <- 4
 #' nbulks <- 3
 #' ncells <- 5
@@ -109,7 +115,9 @@ check_input_dimensions <- function(y, x) {
 #' @return nothing
 #' 
 #' @examples 
-#' set.seed(1)
+#' library(dplyr)
+#' library(tibble)
+#' set.seed(42)
 #' ngenes <- 4
 #' nbulks <- 3
 #' ncells <- 5
@@ -147,7 +155,7 @@ check_input_se <- function(celldf, sclibrary, by, weight, bulk_id, cell_id) {
   if (!tibble::is_tibble(celldf)) {
     stop("celldf must be a tibble")
   }
-  if (!all(sapply(celldf %>% pull(cell_id), function(x) {
+  if (!all(sapply(celldf %>% dplyr::pull(cell_id), function(x) {
     x %in% colnames(sclibrary)
   }))) {
     stop("celldf contains weights of cells that are not in the count matrix.")
@@ -182,8 +190,7 @@ check_input_se <- function(celldf, sclibrary, by, weight, bulk_id, cell_id) {
 #' @return a matrix storing the dataframe's values
 #' 
 #' @examples
-#' 
-#' set.seed(1)
+#' set.seed(42)
 #' ngenes <- 4
 #' nbulks <- 3
 #' ncells <- 5
@@ -200,19 +207,29 @@ check_input_se <- function(celldf, sclibrary, by, weight, bulk_id, cell_id) {
 #' 
 #' fitted_tissue <- fit_tissue(bulks, sc)
 #' 
-#' sc_df <- tissueResolver:::matrix_to_df(sc, rows = "gene", cols = "cell_id", values = "expression")
-#' 
-#' sc_mat <- tissueResolver:::df_to_matrix(sc_df, rows = "gene", cols = "cell_id", values = "expression")
-#' 
+#' sc_df <- tissueResolver:::matrix_to_df(
+#'   sc,
+#'   rows = "gene",
+#'   cols = "cell_id",
+#'   values = "expression"
+#' )
+#'
+#' sc_mat <- tissueResolver:::df_to_matrix(
+#'   sc_df,
+#'   rows = "gene",
+#'   cols = "cell_id",
+#'   values = "expression"
+#' )
+#'
 df_to_matrix <- function(df, rows="gene", cols="cell_id", values= "expression") {
   # give each cell a seperate column storing the gene expression
-  tmp <- df %>% pivot_wider(names_from = all_of(cols), values_from = all_of(values))
+  tmp <- df %>% tidyr::pivot_wider(names_from = dplyr::all_of(cols), values_from = dplyr::all_of(values))
   # discard the rows column and store as matrix
-  r <- tmp %>% dplyr::select(-all_of(rows)) %>% as.matrix()
+  r <- tmp %>% dplyr::select(-dplyr::all_of(rows)) %>% as.matrix()
   # give the rows of the matrix the names in rows
-  rownames(r) <- tmp %>% pull(all_of(rows))
+  rownames(r) <- tmp %>% dplyr::pull(dplyr::all_of(rows))
   # give the cols of the matrix the names in cols
-  colnames(r) <- tmp %>% dplyr::select(-all_of(rows)) %>% names()
+  colnames(r) <- tmp %>% dplyr::select(-dplyr::all_of(rows)) %>% names()
   return(r)
 }
 
@@ -232,7 +249,7 @@ df_to_matrix <- function(df, rows="gene", cols="cell_id", values= "expression") 
 #' 
 #' 
 #' @examples
-#' set.seed(1)
+#' set.seed(42)
 #' ngenes <- 4
 #' nbulks <- 3
 #' ncells <- 5
@@ -249,15 +266,25 @@ df_to_matrix <- function(df, rows="gene", cols="cell_id", values= "expression") 
 #'
 #' fitted_tissue <- fit_tissue(bulks, sc)
 #'
-#' sc_df <- tissueResolver:::matrix_to_df(sc, rows = "gene", cols = "cell_id", values = "expression")
+#' sc_df <- tissueResolver:::matrix_to_df(
+#'    sc,
+#'    rows = "gene",
+#'    cols = "cell_id",
+#'    values = "expression"
+#'   )
 #'
-#' sc_mat <- tissueResolver:::df_to_matrix(sc_df, rows = "gene", cols = "cell_id", values = "expression")
+#' sc_mat <- tissueResolver:::df_to_matrix(
+#'    sc_df,
+#'    rows = "gene",
+#'    cols = "cell_id",
+#'    values = "expression"
+#' )
 #'
 matrix_to_df <- function(genematrix, rows="gene", cols= "cell_id", values = "expression") {
   # create a tibble from the input matrix and store the rownames in a seperate column
-  res <- cbind(tibble(gene_tmp = rownames(genematrix)), as_tibble(genematrix)) %>%
+  res <- cbind(dplyr::tibble(gene_tmp = rownames(genematrix)), dplyr::as_tibble(genematrix)) %>%
     # now store all the cells in one column
-    pivot_longer(-gene_tmp, names_to = cols, values_to = values)
+    tidyr::pivot_longer(-gene_tmp, names_to = cols, values_to = values)
   # assign the first column (storing the rownames of the input matrix) the desired name given by rows  
   names(res)[1] <- rows
   return(res)
@@ -273,7 +300,10 @@ matrix_to_df <- function(genematrix, rows="gene", cols= "cell_id", values = "exp
 #' @param cell_id name of the column in the mapping dataframe that names the single cells
 #'
 #' @return nothing
-#' set.seed(1)
+#' 
+#' @examples
+#' library(tibble)
+#' set.seed(42)
 #' ngenes <- 4
 #' nbulks <- 3
 #' ncells <- 5
@@ -288,14 +318,14 @@ matrix_to_df <- function(genematrix, rows="gene", cols= "cell_id", values = "exp
 #' colnames(bulks) <- bulknames
 #' colnames(sc) <- cellnames
 #' 
-#' fitted_tissue <- fit_tissue_noboot(bulks, sc)
+#' fitted_tissue <- tissueResolver:::fit_tissue_noboot(bulks, sc)
 #' 
 #' mapping <- tibble(
 #'   cell_id = cellnames,
 #'   celltype = c("CTA", "CTB", "CTA", "CTB", "CTA")
 #' )
 #' 
-#' check_input_mapping(fitted_tissue, mapping, by = "cell_id", cell_id = "cell_id")
+#' tissueResolver:::check_input_mapping(fitted_tissue, mapping, by = "cell_id", cell_id = "cell_id")
 #' 
 check_input_mapping <- function(tissuemodel, mapping, by, cell_id){
   if( ! by %in% names(mapping)) {
@@ -318,7 +348,7 @@ check_input_mapping <- function(tissuemodel, mapping, by, cell_id){
 #' @return TRUE if it is a tissuemodel, FALSE otherwise
 #' 
 #' @examples
-#' set.seed(1)
+#' set.seed(42)
 #' ngenes <- 4
 #' nbulks <- 3
 #' ncells <- 5

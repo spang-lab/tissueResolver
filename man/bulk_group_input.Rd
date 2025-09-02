@@ -23,14 +23,23 @@ input wrapper for accepting both named vectors as well as dataframes containing 
 # Case 1
 bulkgroups <- c("b1" = "group_1", "b2" = "group_2", "b3" = "group_3")
 
-bulk_group_input_1 <- tissueResolver:::bulk_group_input(bulkgroups, bulkidcol = "bulk_id", groupcol = "group")
+bulk_group_input_1 <- tissueResolver:::bulk_group_input(
+   bulkgroups,
+   bulkidcol = "bulk_id",
+   groupcol = "group"
+)
 
 # Case 2
+library(tibble)
 bulkgroups <- tibble(
   "bulk_id" = c("b1", "b2", "b3"),
   "group" = c("group_1", "group_2", "group_3")
 )
 
-bulk_group_input_2 <- tissueResolver:::bulk_group_input(bulkgroups, bulkidcol = "bulk_id", groupcol = "group")
+bulk_group_input_2 <- tissueResolver:::bulk_group_input(
+   bulkgroups,
+   bulkidcol = "bulk_id",
+   groupcol = "group"
+)
 
 }

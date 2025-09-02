@@ -22,6 +22,7 @@ a ggplot plot object that can further be customized, viewed or saved in a file. 
 plots each UMAP point from the single cell embedding, optionally coloured by e.g., the associated cell type
 }
 \examples{
+library(ggplot2)
 scembedding <- data.frame(
   "colnames" = paste0("cell_", 1:9),
   "UMAP1" = c(rep(x = 1, n = 3), rep(x = 2, n = 3), rep(x = 3, n = 3)),

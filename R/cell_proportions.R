@@ -11,8 +11,9 @@
 #'
 #' @return data frame holding the cumulated weights for each cell population within each bulk.
 #' 
-#' @examples 
-#' set.seed(1)
+#' @examples
+#' library(tibble)
+#' set.seed(42)
 #' ngenes <- 4
 #' nbulks <- 3
 #' ncells <- 5
@@ -59,28 +60,27 @@ cell_proportions_singlemodel <- function(
     check_input_mapping(tissuemodel, mapping, by, cell_id)
 
     # join the mapping from cell_id to cell type to the tissuemodel
-    celldf <- tissuemodel$tissuemodel %>% inner_join(mapping, by=cell_id)
+    celldf <- tissuemodel$tissuemodel %>% dplyr::inner_join(mapping, by=cell_id)
   } else { # is no tissuemodel (columns will be checked below)
     celldf <- tissuemodel
   }
-  if( ! by %in% names(celldf) ) {
-    stop(paste0("by-selection (\"", by, "\") is not a name of celldf"))
-  }
-  if( ! weight %in% names(celldf) ) {
-    stop(paste0("weights (\"", weights, "\") is not a name of celldf"))
-  }
-  if( ! bulk_id %in% names(celldf) ) {
-    stop(paste0("bulk_id (\"", bulk_id, "\") is not a name of celldf"))
+
+  # input schecks
+  for (col in c(by, weight, bulk_id, cell_id)) {
+    if (!col %in% names(celldf)) {
+      stop(paste0("Column (\"", col, "\") is not a name of celldf"))
+    }
   }
 
   props <- celldf %>%
     # group cells declaring the same bulk and having the same by category together
     dplyr::group_by(dplyr::across(dplyr::all_of(bulk_id)), dplyr::across(dplyr::all_of(by))) %>%
     # sum the weights of the above groups
-    mutate(wsum=sum(weight)) %>% 
+    dplyr::mutate(wsum=sum(weight)) %>% 
     # discard redundant entries
     dplyr::select(dplyr::all_of(c(bulk_id, by, "wsum"))) %>% unique() %>%
     dplyr::rename(weight = wsum)
+
   return(props)
 }
 
@@ -98,7 +98,8 @@ cell_proportions_singlemodel <- function(
 #' The weight column holds the mean over the bootstrap runs across each bulk-celltype group.
 #'
 #' @examples
-#' set.seed(1)
+#' library(tibble)
+#' set.seed(42)
 #' ngenes <- 4
 #' nbulks <- 3
 #' ncells <- 5
@@ -148,8 +149,14 @@ cell_proportions <- function(
                       bulk_id = "bulk_id",
                       cell_id="cell_id") {
   if ("bootstrap" %in% names(tissuemodel) && tissuemodel$bootstrap == TRUE) {
+    message(paste0("Computing cell proportions for ",tissuemodel$bootstrap_nruns, " bootstrap runs:"))
+
+    # set up progress bar
+    pb <- utils::txtProgressBar(min = 0, max = tissuemodel$bootstrap_nruns, initial = 0, style = 3)
+
+    # get proportions for first bootstrap run
     irun <- 1
-    message(paste0("Computing cell proportions for bootstrap sample ", irun, " / ", tissuemodel$bootstrap_nruns))
+    
     # fetch the tissuemodel of the first bootstrap run
     this_model <- list(
                     fitted_genes = tissuemodel$fitted_genes,
@@ -160,10 +167,11 @@ cell_proportions <- function(
                             mapping,
                             by,
                             weight,
-                            bulk_id, 
-                            cell_id) %>% dplyr::rename (tmpweight_boot = weight)
+                            bulk_id,
+                            cell_id) %>% dplyr::rename(tmpweight_boot = weight)
+
+    # loop over remaining bootstrap runs and concatenate values                       
     for( irun in 2:tissuemodel$bootstrap_nruns ){
-      message(paste0("Computing cell proportions for bootstrap sample ", irun, " / ", tissuemodel$bootstrap_nruns))
       # fetch the tissuemodel of the irun-th bootstrap run
       this_model <- list(
                       fitted_genes = tissuemodel$fitted_genes,
@@ -179,24 +187,40 @@ cell_proportions <- function(
       # join the bootstrapped cell population weights as list to the props dataframe
       # within a column "tmpweight_boot"
       props <-  props %>%
-                full_join(thisprops, by=c(bulk_id, by)) %>%
-                rowwise() %>%
-                mutate(tmpweight_boot = list(c(tmpweight_boot, current_weight))) %>%
+                dplyr::full_join(thisprops, by=c(bulk_id, by)) %>%
+                dplyr::rowwise() %>%
+                dplyr::mutate(tmpweight_boot = list(c(tmpweight_boot, current_weight))) %>%
                 # set NAs to 0, i.e. cells which are not drawn
-                mutate(tmpweight_boot = list(tidyr::replace_na(tmpweight_boot,0))) %>%
+                dplyr::mutate(tmpweight_boot = list(tidyr::replace_na(tmpweight_boot,0))) %>%
                 dplyr::select(-current_weight)
 
+      # update progress bar
+      utils::setTxtProgressBar(pb, irun)
     }
 
+    # calcualte mean of weights across specific groups
     props <-  props %>% 
-              mutate(tmpweight = mean(tmpweight_boot)) %>%
+              dplyr::mutate(tmpweight = mean(tmpweight_boot)) %>%
               # dplyr::rename tmpweight with weight and tmp_boot with weight_boot
               dplyr::rename(!!weight := tmpweight, !!paste0(weight, "_boot") := tmpweight_boot)
               # quoname is deprecated
               # dplyr::rename(!!quo_name(weight) := tmpweight) %>%
               # dplyr::rename(!!quo_name(paste0(weight, "_boot")) := tmpweight_boot)
-    return(props)
+
+    message("\t") # get to new line in terminal
   } else {
-    return(cell_proportions_singlemodel(tissuemodel, mapping, by, weight, bulk_id, cell_id))
+    message("Computing proportions for single tissue model")
+    props <- cell_proportions_singlemodel(tissuemodel, mapping, by, weight, bulk_id, cell_id)
   }
+
+  # calculate cell type proportions/fractions
+  props <- props %>%
+    dplyr::group_by(bulk_id) %>%
+    dplyr::mutate(bulk_weight = sum(weight)) %>%
+    dplyr::ungroup() %>%
+    dplyr::mutate(per_cells = (weight / bulk_weight) * 100) %>%
+    dplyr::select(!bulk_weight) %>%
+    dplyr::rename(!!paste0(by, "_percent") := per_cells)
+
+  return(props)
 }

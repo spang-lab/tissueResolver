@@ -46,7 +46,8 @@ computes weighted 2D-densities for cell populations fitted using fit_tissue.
 If groups are given, such densities are computed for every group separately.
 }
 \examples{
-set.seed(1)
+library(tibble)
+set.seed(42)
 scembedding <- data.frame(
   "colnames" = paste0("cell_", 1:9),
   # "colnames" = c(paste0("cell_", 1:3), paste0("cell_", 1:3), paste0("cell_", 1:3)),

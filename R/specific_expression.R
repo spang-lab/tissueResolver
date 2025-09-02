@@ -20,8 +20,10 @@
 #'
 #' @return data frame holding the expression and regulation of each gene within each bulk and celltype.
 #'
-#' @examples 
-#' set.seed(1)
+#' @examples
+#' library(dplyr)
+#' library(tibble)
+#' set.seed(42)
 #' ngenes <- 4
 #' nbulks <- 3
 #' ncells <- 5
@@ -58,72 +60,103 @@
 #'   compute_total = TRUE
 #' )
 fast_specific_expression_regulation <- function(
-                                          tissuemodel,
-                                          sclibrary,
-                                          mapping,
-                                          by="celltype",
-                                          weight="weight",
-                                          bulk_id = "bulk_id",
-                                          cell_id="cell_id",
-                                          compute_total = TRUE) {
+
+  tissuemodel,
+  sclibrary,
+  mapping,
+  by = "celltype",
+  weight = "weight",
+  bulk_id = "bulk_id",
+  cell_id = "cell_id",
+  compute_total = TRUE 
+
+) {
+  # check if input is a tissuemodel
   if(!is_tissuemodel(tissuemodel)) {
-    stop("function called with an object that is not a tissuemodel")
+    stop("Function called with an object that is not a tissuemodel")
   }
-  # check for correct formatting of mapping
-  check_input_mapping(tissuemodel, mapping, by, cell_id)
-  if( tibble::is_tibble(sclibrary) ) {
-    sclibrary <- df_to_matrix(sclibrary, cols=cell_id)
-  }
-  # join the by column of mapping to tissuemodel tibble in order to comprise
+
+  # join the cell type column of mapping to tissuemodel tibble in order to comprise
   # the type of each cell
-  celldf <- tissuemodel$tissuemodel %>% inner_join(mapping, by=cell_id)
+  celldf <- tissuemodel$tissuemodel %>% 
+    dplyr::inner_join(mapping, by = cell_id)
+
+  # transform sclibrary to matrix if it is a tibble
+  if( tibble::is_tibble(sclibrary) ) {
+    sclibrary <- df_to_matrix(sclibrary, cols = cell_id)
+  }
 
   # check for correct formatting of resulting data frame celldf
-  check_input_se(celldf, sclibrary, by, weight, bulk_id, cell_id)
+  check_input_se(
+    celldf, 
+    sclibrary, 
+    by, 
+    weight, 
+    bulk_id, 
+    cell_id
+    )
 
+  # get genes of single cell library
   genes <- rownames(sclibrary)
 
-  res <- tibble()
-  # store all possible celltypes determined by "by" 
-  ctypes <- celldf %>% pull(by) %>% unique()
-  if( compute_total ) {
-    # allow for computation of total expression explained by ALL celltypes
-    ctypes <- c(ctypes, "total_explained")
+  # for each cell type (by) and bulk (bulk_id) calculate the average expression 
+  csre <- do.call(rbind,
+    tapply(celldf, celldf[[by]], function(df_ct) {
+
+      do.call(rbind, 
+        tapply(df_ct, df_ct[[bulk_id]], function(df_ct_bulk) {
+          
+          # get current cell IDs and weights
+          cellids <- df_ct_bulk[[cell_id]]
+          weights <- stats::setNames(df_ct_bulk[[weight]], cellids)
+
+          # specific expression = X_ctype beta_ctype
+          se <- as.matrix(sclibrary[genes, cellids]) %*% as.matrix(weights[cellids])
+
+          # bind specific expression and regulation for each bulk together
+          tibble::tibble(
+            bulk_id = df_ct_bulk[[bulk_id]] %>% unique(),
+            by = df_ct_bulk[[by]] %>% unique(),
+            gene = genes,
+            expression = as.vector(se),
+            regulation = as.vector(se / sum(weights)),
+            weights = sum(weights)
+            )
+
+        })
+      )
+    })
+    )
+
+  # fill missing values in csre with 0
+  csre <- csre %>%
+    tidyr::complete(bulk_id, by, gene, 
+      fill = list(expression = 0, regulation = 0, weights = 0)
+      )
+
+  # calculate the total (sum) expression and regulation for csre
+  if(isTRUE(compute_total)) {
+    csre_total <- csre %>% 
+      dplyr::group_by(
+        dplyr::across(c(bulk_id, "gene"))
+        ) %>%
+      dplyr::reframe(
+        by = "total_explained",
+        expression = sum(expression), 
+        regulation = expression / sum(weights)
+      )
+
+    csre <- rbind(csre %>% dplyr::select(!weights), csre_total)
   }
-  # for each celltype loop through each bulk to retrive
-  # subframe of celldf (called thesecells) holding only the specified celltype(s)
-  for(ctype in ctypes) {
-    for(bulkid in celldf %>% pull(bulk_id) %>% unique()) {
-      # filter ALL cells with matching bulk_id
-      if( ! is.na(ctype) && ctype == "total_explained" ){
-        thesecells <- celldf %>% filter(across(bulk_id) == bulkid)
-        # filter ONLY cells with matching celltype and matching bulk_id
-      } else if( ! is.na(ctype) ) {
-        thesecells <- celldf %>% filter(across(by) == ctype) %>% filter(across(bulk_id) == bulkid)
-        # treat NA as celltype to filter by
-      } else {
-        thesecells <- celldf %>% filter(is.na(across(by)) ) %>% filter(across(bulk_id) == bulkid)
-      }
-      weights <- thesecells %>% pull(weight)
-      cellids <- thesecells %>% pull(cell_id)
-      names(weights) <- cellids
-      # specific expression = X_ctype beta_ctype
-      se <- as.matrix(sclibrary[genes,cellids]) %*% as.matrix(weights[cellids])
-      # bind specific expression and regulation for each bulk together
-      res <- res %>% rbind(tibble(
-                       bulk_id = bulkid,
-                       ctype = ctype,
-                       gene = genes,
-                       expression  = as.vector(se),
-                       regulation = as.vector(se / sum(weights))
-                     ))
-    }
-  }
-  # just some formatting for clearer structure
-  namesres <- names(res)
-  namesres <- c(bulk_id, by, namesres[3:length(namesres)])
-  names(res) <- namesres
-  return(res)
+
+  # format output to match input columns
+  colnames(csre) <- c(
+    bulk_id,
+    by,
+    colnames(csre)[3:length(colnames(csre))]
+  )
+
+  return(csre)
 }
 
 #' computes specific expression and regulation
@@ -143,7 +176,8 @@ fast_specific_expression_regulation <- function(
 #' @return data frame holding the expression and regulation of each gene within each bulk and celltype.
 #' 
 #' @examples 
-#' set.seed(1)
+#' library(tibble)
+#' set.seed(42)
 #' ngenes <- 4
 #' nbulks <- 3
 #' ncells <- 5
@@ -186,65 +220,113 @@ fast_specific_expression_regulation <- function(
 #'
 #' @export
 specific_expression_regulation <- function(
-                                    tissuemodel,
-                                    sclibrary,
-                                    mapping,
-                                    by="celltype",
-                                    weight="weight",
-                                    bulk_id = "bulk_id",
-                                    cell_id="cell_id",
-                                    compute_total = TRUE
-                                  ) {
+
+  tissuemodel,
+  sclibrary,
+  mapping,
+  by = "celltype",
+  weight = "weight",
+  bulk_id = "bulk_id",
+  cell_id = "cell_id",
+  compute_total = TRUE 
+
+) {
+
+  # loop over each bootstrap run to calculate csre/wsce for each tm
   if("bootstrap" %in% names(tissuemodel) && tissuemodel$bootstrap == TRUE) {
 
-    message(paste0("Computing CSRE for bootstrap sample ", 1, " / ", tissuemodel$bootstrap_nruns))
+    # get number of bootstrap runs
+    n_boot <- tissuemodel$bootstrap_nruns
 
-    # retrieve model for each bootstrap run and compute csre
-    this_model <- list(
-                    fitted_genes = tissuemodel$fitted_genes,
-                    tissuemodel = tissuemodel$tissuemodels[[1]])
-    csre <- fast_specific_expression_regulation(
-                    this_model,
-                    sclibrary,
-                    mapping,
-                    by=by,
-                    weight=weight,
-                    bulk_id = bulk_id,
-                    cell_id = cell_id,
-                    compute_total = compute_total)
+    # loop over all bootstrap runs and compute csre
+    message(paste0("Computing CSRE for ", n_boot, " bootstrap runs: "))
 
-    for( irun in 2:tissuemodel$bootstrap_nruns ){
-      message(paste0("Computing CSRE for bootstrap sample ", irun, " / ", tissuemodel$bootstrap_nruns))
+    # set up progress bar
+    pb <- utils::txtProgressBar(min = 0, max = n_boot, initial = 0, style = 3)
 
+    for(run_i in 1:n_boot) {
       this_model <- list(
-                      fitted_genes = tissuemodel$fitted_genes,
-                      tissuemodel = tissuemodel$tissuemodels[[irun]])
-      this_csre <- fast_specific_expression_regulation(
-                      this_model,
-                      sclibrary,
-                      mapping,
-                      by=by,
-                      weight=weight,
-                      bulk_id = bulk_id,
-                      cell_id = cell_id,
-                      compute_total = compute_total)
-      # join csre's together and store resulting expression and regulation as list
-      csre <- csre %>% right_join(this_csre, by =c(bulk_id, by, "gene")) %>%
-        rowwise(all_of(c(bulk_id, by, "gene"))) %>%
-        mutate(expression = list(c(expression.x, expression.y))) %>%
-        mutate(regulation = list(c(regulation.x, regulation.y))) %>%
-        dplyr::select(-expression.x, -expression.y, -regulation.x, -regulation.y)
+        "fitted_genes" = tissuemodel$fitted_genes, 
+        "tissuemodel" = tissuemodel$tissuemodel[[run_i]]
+        )
+
+      # calculate the csre for the first bootstrap run
+      curr_csre <- fast_specific_expression_regulation(
+        this_model,
+        sclibrary,
+        mapping,
+        by = by,
+        weight = weight,
+        bulk_id = bulk_id,
+        cell_id = cell_id,
+        compute_total = compute_total
+      )
+
+      if(run_i == 1) {
+
+        csre <- curr_csre
+
+      } else {
+
+        # for all other iterations combine expression and regualtion as a list
+        csre <- csre %>% 
+          dplyr::full_join(curr_csre, by = c(bulk_id, by, "gene")) %>%
+          dplyr::rowwise() %>%
+          dplyr::mutate(
+            expression = list(c(expression.x, expression.y)),
+            regulation = list(c(regulation.x, regulation.y))
+          ) %>%
+          dplyr::select(-expression.x, -expression.y, -regulation.x, -regulation.y)
+
+      }
+
+      # update progress bar
+      utils::setTxtProgressBar(pb, run_i)
     }
-    # add column storing mean over all bootstrapped expressions and regulations
-    csre <- csre %>% dplyr::rename(expression_boot = expression) %>%
-      mutate(expression = mean(expression_boot)) %>%
-      dplyr::rename(regulation_boot = regulation) %>%
-      mutate(regulation = mean(regulation_boot))
-    return(csre)
+
+    # change NA values to 0 and add 0s for bootstrap runs where a cell 
+    # type was not present that is present in later runs
+    csre$expression <- lapply(csre$expression, function(row) {
+        row[is.na(row)] <- 0
+        c(rep(0, times = n_boot - length(row)), row)
+      })
+
+    csre$regulation <- lapply(csre$regulation, function(row) {
+        row[is.na(row)] <- 0
+        c(rep(0, times = n_boot - length(row)), row)
+      })
+
+    # calculate mean over all bootstrap runs
+    csre <- csre %>%
+      dplyr::rename(
+        expression_boot = expression,
+        regulation_boot = regulation
+      ) %>%
+      dplyr::mutate(
+        expression = mean(expression_boot),
+        regulation = mean(regulation_boot)
+      ) %>%
+      dplyr::ungroup()
+
+      message("\t")
   } else {
+
+    message("Computing CSRE for single tissue model")
+
     # if tissuemodel does not result from bootstrapping directly compute csre
-    return(fast_specific_expression_regulation(tissuemodel, sclibrary, mapping, by=by, weight=weight, bulk_id = bulk_id, cell_id = cell_id, compute_total = compute_total))
+    csre <- fast_specific_expression_regulation(
+      tissuemodel,
+      sclibrary,
+      mapping,
+      by = by,
+      weight = weight,
+      bulk_id = bulk_id,
+      cell_id = cell_id,
+      compute_total = compute_total
+    )
   }
+
+  return(csre)
 }
 
 
@@ -264,7 +346,8 @@ specific_expression_regulation <- function(
 #' @return data frame holding the explained expression for each gene in each bulk
 #' 
 #' @examples 
-#' set.seed(1)
+#' library(tibble)
+#' set.seed(42)
 #' ngenes <- 4
 #' nbulks <- 3
 #' ncells <- 5
@@ -318,16 +401,25 @@ explained_expression <- function(
   # then reshape to having the expression of each gene associated to each bulk as separate column
   # then group all entries which belong to the same gene AND the same bulk and compute the sum of expression (explained expression) over this group
   # finally cancel the weight and cell_id column, i.e., se contains bulk_id, gene and explained expression
-  se <- cbind(celldf,
-              celldf %>% pull(weight) * t(sclibrary[,celldf %>% pull(cell_id)])
-              ) %>%
-            pivot_longer(-dplyr::all_of(c(bulk_id, cell_id, weight)), names_to="gene", values_to="expression") %>%
-            group_by(across(dplyr::all_of(bulk_id)), gene) %>% 
-            mutate(expression = sum(expression)) %>%
-            ungroup() %>%
-            dplyr::select(dplyr::all_of(c(bulk_id, "gene", "expression")))
+  se <- cbind(
+      celldf,
+      celldf %>% dplyr::pull(weight) * t(sclibrary[,celldf %>% dplyr::pull(cell_id)])
+      ) %>%
+    tidyr::pivot_longer(
+      -dplyr::all_of(c(bulk_id, cell_id, weight)),
+      names_to="gene",
+      values_to="expression"
+      ) %>%
+    dplyr::group_by(dplyr::across(dplyr::all_of(bulk_id)), gene) %>%
+    dplyr::mutate(expression = sum(expression)) %>%
+    dplyr::ungroup() %>%
+    dplyr::select(dplyr::all_of(c(bulk_id, "gene", "expression")))
   # add by column  with constant value total_explained       
   se[[by]] <- "total_explained"
   # discard all non unique entries
-  return(se %>% dplyr::select(dplyr::all_of(c(bulk_id, by, "gene", "expression"))) %>% unique())
+  return(
+    se %>%
+      dplyr::select(dplyr::all_of(c(bulk_id, by, "gene", "expression"))) %>%
+      unique()
+      )
 }

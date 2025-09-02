@@ -34,7 +34,8 @@ returns the sum over weights of certain cell populations (grouped by mapping for
 for a single tissue model retrieved by fit_tissue WITHOUT bootstrap.
 }
 \examples{
-set.seed(1)
+library(tibble)
+set.seed(42)
 ngenes <- 4
 nbulks <- 3
 ncells <- 5

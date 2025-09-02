@@ -25,8 +25,7 @@ a matrix storing the dataframe's values
 allows to call functions expecting matrices to be called with tibbles
 }
 \examples{
-
-set.seed(1)
+set.seed(42)
 ngenes <- 4
 nbulks <- 3
 ncells <- 5
@@ -43,8 +42,18 @@ colnames(sc) <- cellnames
 
 fitted_tissue <- fit_tissue(bulks, sc)
 
-sc_df <- tissueResolver:::matrix_to_df(sc, rows = "gene", cols = "cell_id", values = "expression")
+sc_df <- tissueResolver:::matrix_to_df(
+  sc,
+  rows = "gene",
+  cols = "cell_id",
+  values = "expression"
+)
 
-sc_mat <- tissueResolver:::df_to_matrix(sc_df, rows = "gene", cols = "cell_id", values = "expression")
+sc_mat <- tissueResolver:::df_to_matrix(
+  sc_df,
+  rows = "gene",
+  cols = "cell_id",
+  values = "expression"
+)
 
 }

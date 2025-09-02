@@ -25,8 +25,10 @@
 #' @return ggplot object
 #' 
 #' @examples 
-#' library(gridExtra)
-#' set.seed(1)
+#' library(tibble)
+#' library(dplyr)
+#' library(tidyr)
+#' set.seed(42)
 #' ngenes <- 4
 #' nbulks <- 3
 #' ncells <- 5
@@ -97,7 +99,7 @@ plot_csre <- function(
                 addexpressionlevel = FALSE ) {
   
   # retrieve bulk groups from csre tibble (e.g. GCB vs. ABC)
-  groups <- csre %>% pull(group) %>% unique() %>% sort()
+  groups <- csre %>% dplyr::pull(group) %>% unique() %>% sort()
   if( is.na(groupA) || is.na(groupB) ){
     stop("no groups given.")
   }
@@ -107,8 +109,8 @@ plot_csre <- function(
     # cells which do not belong to the ctypes array
     remove_celltypes <- setdiff(
       csre %>%
-        filter(celltype != "total_explained") %>%
-        pull(celltype) %>% unique(),
+        dplyr::filter(celltype != "total_explained") %>%
+        dplyr::pull(celltype) %>% unique(),
       ctypes)
   } else {
     remove_celltypes <- c()
@@ -117,38 +119,49 @@ plot_csre <- function(
   # average over all bulks within the same (group, celltype, gene)-group:
   groupavg <- csre %>%
     # assign to the celltypes belonging to remove_celltypes the value "other"
-    mutate(celltype = ifelse(celltype %in% remove_celltypes, "other", celltype)) %>%
+    dplyr::mutate(celltype = ifelse(celltype %in% remove_celltypes, "other", celltype)) %>%
     # set regulation entries which are NaN to 0
-    mutate(regulation = ifelse(is.na(regulation), 0.0, regulation)) %>%
+    dplyr::mutate(regulation = ifelse(is.na(regulation), 0.0, regulation)) %>%
     # set expression entries which are NaN to 0
-    mutate(expression = ifelse(is.na(expression), 0.0, expression)) %>%
+    dplyr::mutate(expression = ifelse(is.na(expression), 0.0, expression)) %>%
     # group across bulk_id, celltype, gene and group
-    group_by(bulk_id, celltype, gene, group) %>%
+    dplyr::group_by(bulk_id, celltype, gene, group) %>%
     # compute cumulated sums over these groups
-    mutate(expression = sum(expression)) %>%
-    mutate(regulation = sum(regulation)) %>%
-    unique() %>% ungroup() %>%
+    dplyr::mutate(expression = sum(expression)) %>%
+    dplyr::mutate(regulation = sum(regulation)) %>%
+    unique() %>% dplyr::ungroup() %>%
     # consider only the two bulk groups A and B
-    filter(group %in% c(groupA, groupB)) %>%
+    dplyr::filter(group %in% c(groupA, groupB)) %>%
     # group across bulk group, gene and celltype
-    group_by(group,gene,celltype) %>%
+    dplyr::group_by(group,gene,celltype) %>%
     # compute means across this group,
     # i.e., compare bulks belonging to same bulkgroup
-    mutate(avgexpr = mean(expression)) %>%
-    mutate(avgregulation = mean(regulation)) %>%
-    ungroup() %>% dplyr::select(group, gene, celltype, avgexpr, avgregulation) %>% unique() %>% drop_na()
+    dplyr::mutate(avgexpr = mean(expression)) %>%
+    dplyr::mutate(avgregulation = mean(regulation)) %>%
+    dplyr::ungroup() %>% 
+    dplyr::select(group, gene, celltype, avgexpr, avgregulation) %>% 
+    unique() %>% 
+    tidyr::drop_na()
 
   # the average total explained expression across bulks for each (group,gene)-group
   # this is just the lower part of groupavg but without the regulation column
-  total_explained <- groupavg %>% filter(celltype == "total_explained") %>% dplyr::select(group, gene, avgexpr)
+  total_explained <- groupavg %>% 
+    dplyr::filter(celltype == "total_explained") %>% 
+    dplyr::select(group, gene, avgexpr)
 
 
   diff <- groupavg %>%
     # join group avarage and total explained avarage 
     # and add the total_expr column giving the total expression across cells
-    inner_join(total_explained %>% dplyr::rename(total_expr = avgexpr), by=c("group", "gene")) %>%
+    dplyr::inner_join(total_explained %>% 
+    dplyr::rename(total_expr = avgexpr), by=c("group", "gene")) %>%
     # give avgexpr, avgreg and total_expr separate columns for both bulkgroups A and B
-    pivot_wider(names_from = group, values_from=c(avgexpr, avgregulation, total_expr), names_prefix="group_", values_fill = 0.0) %>%
+    tidyr::pivot_wider(
+      names_from = group,
+      values_from=c(avgexpr, avgregulation, total_expr),
+      names_prefix="group_",
+      values_fill = 0.0
+      ) %>%
     dplyr::rename(avgexpr_A = paste0("avgexpr_group_", groupA)) %>%
     dplyr::rename(avgexpr_B = paste0("avgexpr_group_", groupB)) %>%
     dplyr::rename(avgregulation_A = paste0("avgregulation_group_", groupA)) %>%
@@ -156,45 +169,51 @@ plot_csre <- function(
     dplyr::rename(total_expr_A = paste0("total_expr_group_", groupA)) %>%
     dplyr::rename(total_expr_B = paste0("total_expr_group_", groupB)) %>%
     # for each row (comprising gene,celltype) give logp1 difference of avgexpr, avgreg and total_expr
-    mutate(logdiffexpr = log2((avgexpr_A+1.0) / (avgexpr_B+1.0))) %>%
-    mutate(logdiffreg = log2((avgregulation_A+1.0) / (avgregulation_B+1.0))) %>%
-    mutate(logdifftotal = log2((total_expr_A+1.0)/(total_expr_B+1.0))) %>%
+    dplyr::mutate(logdiffexpr = log2((avgexpr_A+1.0) / (avgexpr_B+1.0))) %>%
+    dplyr::mutate(logdiffreg = log2((avgregulation_A+1.0) / (avgregulation_B+1.0))) %>%
+    dplyr::mutate(logdifftotal = log2((total_expr_A+1.0)/(total_expr_B+1.0))) %>%
     # give relative difference between avgexpr relative to the tota_expr
-    mutate(relchange = 0.5*(avgexpr_A-avgexpr_B)/(total_expr_A+total_expr_B)) %>%
+    dplyr::mutate(relchange = 0.5*(avgexpr_A-avgexpr_B)/(total_expr_A+total_expr_B)) %>%
     # give relative difference between avgregulation
-    mutate(relregchange = 0.5*(avgregulation_A-avgregulation_B)/(avgregulation_A+avgregulation_B)) %>%
+    dplyr::mutate(relregchange = 0.5*(avgregulation_A-avgregulation_B)/(avgregulation_A+avgregulation_B)) %>%
     # replace NAs by 0
-    mutate(relregchange = ifelse(is.na(relregchange), 0.0, relregchange))
+    dplyr::mutate(relregchange = ifelse(is.na(relregchange), 0.0, relregchange))
 
   # for the column specified in heatmapviz (e.g., "relchange") we compute the absolute value 5% and 95% quantile
   # then we take the maximum of both values and scale it with 1.1
   # this quantity will be used for heatmap plotting at the end
-  limits <- 1.1*max(abs(diff %>% pull(heatmapviz) %>% quantile(probs=c(0.05, 0.95), na.rm = TRUE)))
+  limits <- 1.1*max(abs(diff %>% dplyr::pull(heatmapviz) %>% stats::quantile(probs=c(0.05, 0.95), na.rm = TRUE)))
 
   # we cluster based on genes and celltypes:
-  tmp <- diff %>% dplyr::select(celltype, gene, all_of(heatmapviz)) %>% drop_na() %>%
+  tmp <- diff %>% 
+    dplyr::select(celltype, gene, dplyr::all_of(heatmapviz)) %>% 
+    tidyr::drop_na() %>%
     # give each gene a separate column storing the heatmapviz value for each celltype
-    pivot_wider(celltype, names_from=gene, values_from=all_of(heatmapviz)) %>%
+    tidyr::pivot_wider(
+      celltype,
+      names_from=gene,
+      values_from=dplyr::all_of(heatmapviz)
+      ) %>%
     # only consider the actual celltypes so neither "other" nor "total_explained"
-    filter(! celltype %in% c("other", "total_explained"))
-  # format tmp as matrix with celltypes as rownames  
+    dplyr::filter(! celltype %in% c("other", "total_explained"))
+  # format tmp as matrix with celltypes as rownames
   m <- tmp %>% dplyr::select(-celltype) %>% as.matrix()
-  rownames(m) <- tmp %>% pull(celltype)
+  rownames(m) <- tmp %>% dplyr::pull(celltype)
 
   # perform hierarchical clustering in order retrieve
   # hierarchical order of genes
-  ord_genes  <- colnames(m)[hclust(dist(t(m)), method="median")$order]
+  ord_genes <- colnames(m)[stats::hclust(stats::dist(t(m)), method="median")$order]
 
   if( is.null(ctypes) ) {
     # hierarchically order ctypes
-    ctypes <- rownames(m)[hclust(dist(m), method="median")$order]
-    if( "other" %in% (diff %>% pull(celltype) %>% unique()) ) {
+    ctypes <- rownames(m)[stats::hclust(stats::dist(m), method="median")$order]
+    if( "other" %in% (diff %>% dplyr::pull(celltype) %>% unique()) ) {
       # add "other" to the end:
       ctypes <- c(ctypes, "other")
     }
   } else {
     # if ctypes is not null keep the ordering of ctypes and add "other" to the end
-    if( ! ("other" %in% ctypes) && ("other" %in% (diff %>% pull(celltype) %>% unique())) ) {
+    if( ! ("other" %in% ctypes) && ("other" %in% (diff %>% dplyr::pull(celltype) %>% unique())) ) {
       ctypes <- c(ctypes, "other")
     }
   }
@@ -203,46 +222,57 @@ plot_csre <- function(
   # preparing the expression bar plots,
   # according to the user specified visualization
   if( barplotviz == "linear" ) {
-    groupavg <- groupavg %>% filter(celltype != "total_explained") %>%
+    groupavg <- groupavg %>% 
+      dplyr::filter(celltype != "total_explained") %>%
       # encode group column as factor type
-      mutate(across(group, factor, levels=c(groupA, groupB)))
+      dplyr::mutate(dplyr::across(group, factor, levels=c(groupA, groupB)))
     exprchanges1 <-
       groupavg %>%
       # create for each bulk group a barplot, where for each gene the avgexpression contribution of each cell type
       # is visualized by the filling of the bar
-      ggplot(aes(x=avgexpr, y=factor(gene, rev(ord_genes)), fill=factor(celltype, levels = ctypes))) +
-      geom_bar(stat="identity", position="stack") +
-      facet_wrap(~group, strip.position = "left") +
-      ylab(NULL) + xlab(NULL) +
-      theme(legend.position = "none")
+      ggplot2::ggplot(
+        ggplot2::aes(
+          x=avgexpr,
+          y=factor(gene, rev(ord_genes)),
+          fill=factor(celltype,
+          levels = ctypes)
+          )
+        ) +
+      ggplot2::geom_bar(stat="identity", position="stack") +
+      ggplot2::facet_wrap(~group, strip.position = "left") +
+      ggplot2::ylab(NULL) + 
+      ggplot2::xlab(NULL) +
+      ggplot2::theme(legend.position = "none")
   } else if( barplotviz == "log" ) {
     # logp1 transform the avg total expression
     plotdf <- total_explained %>%
-      mutate(logexpr = log2(avgexpr+1.0)) %>% dplyr::select(-avgexpr) %>%
-      mutate(across(group, factor, levels=c(groupA, groupB)))
+      dplyr::mutate(logexpr = log2(avgexpr+1.0)) %>% dplyr::select(-avgexpr) %>%
+      dplyr::mutate(dplyr::across(group, factor, levels=c(groupA, groupB)))
     # create for each bulk group a barplot, where for each gene the logp1 avg total expression
     # is visualized by the length of the bar
     exprchanges1 <- plotdf %>%
-      ggplot(aes(x=logexpr, y=factor(gene, rev(ord_genes)))) +
-      geom_bar(stat="identity", position="stack") +
-      facet_wrap(~group, strip.position = "left") +
-      ylab(NULL) + xlab(NULL) +
-      theme(legend.position = "none")
+      ggplot2::ggplot(ggplot2::aes(x=logexpr, y=factor(gene, rev(ord_genes)))) +
+      ggplot2::geom_bar(stat="identity", position="stack") +
+      ggplot2::facet_wrap(~group, strip.position = "left") +
+      ggplot2::ylab(NULL) + 
+      ggplot2::xlab(NULL) +
+      ggplot2::theme(legend.position = "none")
   } else if( barplotviz == "logdiff") {
     # for the total avarage expression plot
     # the log1p difference between groups A and B for each gene
     # the difference is visualized by the length of the bar
     exprchanges1 <-
       total_explained %>%
-      mutate(logexpr = log2(avgexpr+1.0)) %>%
+      dplyr::mutate(logexpr = log2(avgexpr+1.0)) %>%
       dplyr::select(-avgexpr) %>%
-      pivot_wider(names_from=group, values_from=logexpr) %>%
+      tidyr::pivot_wider(names_from=group, values_from=logexpr) %>%
       dplyr::rename(group_A = groupA, group_B = groupB) %>%
-      mutate(logdiff=group_A-group_B) %>%
-      ggplot(aes(x=logdiff, y=factor(gene, rev(ord_genes)))) +
-      geom_bar(stat="identity", position="stack") +
-      ylab(NULL) + xlab(NULL) +
-      theme(legend.position = "none")
+      dplyr::mutate(logdiff=group_A-group_B) %>%
+      ggplot2::ggplot(ggplot2::aes(x=logdiff, y=factor(gene, rev(ord_genes)))) +
+      ggplot2::geom_bar(stat="identity", position="stack") +
+      ggplot2::ylab(NULL) + 
+      ggplot2::xlab(NULL) +
+      ggplot2::theme(legend.position = "none")
 
   } else if( barplotviz == "relativeA" || barplotviz == "relativeB" || barplotviz == "relative") {
     if( barplotviz == "relativeB" ) {
@@ -255,71 +285,105 @@ plot_csre <- function(
     # cumulated across celltypes within the bulkgroup specified in barplotviz ("relative" defaults to "relativeA")
     plotdf <-
       groupavg %>% dplyr::select(-avgregulation) %>%
-      filter(celltype != "total_explained") %>%
+      dplyr::filter(celltype != "total_explained") %>%
       # give both groups their own column
-      pivot_wider(names_from = group, values_from =  avgexpr, values_fill=0) %>%
-      dplyr::rename(group_A = all_of(groupA), group_B = all_of(groupB)) %>%
-      group_by(gene) %>%
-        # cumulate the avgexpr for each gene in the relgroup across celltypes
-        mutate(normsum = sum(.data[[relgroup]])) %>%
-        # frac gives the proportion between the avgexpr for each celltype
-        # relative to the whole expression
-        mutate(frac_A = group_A / normsum) %>%
-        mutate(frac_B = group_B / normsum) %>%
-      ungroup() %>% dplyr::select(-group_A, -group_B, -normsum) %>%
+      tidyr::pivot_wider(names_from = group, values_from =  avgexpr, values_fill=0) %>%
+      dplyr::rename(group_A = dplyr::all_of(groupA), group_B = dplyr::all_of(groupB)) %>%
+      dplyr::group_by(gene) %>%
+      # cumulate the avgexpr for each gene in the relgroup across celltypes
+      dplyr::mutate(normsum = sum(.data[[relgroup]])) %>%
+      # frac gives the proportion between the avgexpr for each celltype
+      # relative to the whole expression
+      dplyr::mutate(frac_A = group_A / normsum) %>%
+      dplyr::mutate(frac_B = group_B / normsum) %>%
+      dplyr::ungroup() %>%
+      dplyr::select(-group_A, -group_B, -normsum) %>%
       # store only the frac values
-      pivot_longer(c(frac_A, frac_B), names_prefix="frac_", names_to="group", values_to="frac")
+      tidyr::pivot_longer(c(frac_A, frac_B), names_prefix="frac_", names_to="group", values_to="frac")
     # give both groups their original name
     plotdf[,"group"] <- sapply(
-      plotdf %>% pull(group),
+      plotdf %>% dplyr::pull(group),
       function(x){if(x == "A"){return(groupA)}else if(x=="B"){return(groupB)}else{return(NA)}}
     )
 
     # encode group column as factor type
-    plotdf <- plotdf %>% mutate(group = factor(group, levels=c(groupA, groupB)))
+    plotdf <- plotdf %>% 
+      dplyr::mutate(group = factor(group, levels=c(groupA, groupB)))
     # as specified in the barplotpviz parameter the fractions are relative to one of both groups, justifying the
     # equal length of one of the barplots
     exprchanges1 <- plotdf %>%
-      ggplot(aes(x=frac, y=factor(gene, rev(ord_genes)), fill=factor(celltype, levels = rev(ctypes)))) +
-      geom_bar(stat="identity", position="stack") +
-      facet_wrap(~group, strip.position = "left") +
-      ylab(NULL) + xlab(NULL) +
-      theme(legend.position = "none")
+      ggplot2::ggplot(
+        ggplot2::aes(
+          x=frac, 
+          y=factor(gene, rev(ord_genes)),
+          fill=factor(celltype,
+          levels = rev(ctypes))
+          )
+        ) +
+      ggplot2::geom_bar(stat="identity", position="stack") +
+      ggplot2::facet_wrap(~group, strip.position = "left") +
+      ggplot2::ylab(NULL) + 
+      ggplot2::xlab(NULL) +
+      ggplot2::theme(legend.position = "none")
 
     if( addexpressionlevel ) {
       # consider only the avgexpr of groupA
       # logp1 transform it
       exprlevelplot <-
         total_explained %>%
-        filter(group == all_of(groupA)) %>%
+        dplyr::filter(group == dplyr::all_of(groupA)) %>%
         dplyr::select(-group) %>%
-        mutate(logexpr = log2(avgexpr+1)) %>%
+        dplyr::mutate(logexpr = log2(avgexpr+1)) %>%
         # the barplot show the logp1 transformed avgexpression of groupA
-        ggplot(aes(x=logexpr, y=factor(gene, rev(ord_genes)))) +
-        geom_bar(stat="identity", position="stack") +
-        ylab(NULL) + xlab(NULL) +
-        theme(legend.position = "none", axis.text.y = element_blank(), axis.ticks.y = element_blank())
+        ggplot2::ggplot(ggplot2::aes(x=logexpr, y=factor(gene, rev(ord_genes)))) +
+        ggplot2::geom_bar(stat="identity", position="stack") +
+        ggplot2::ylab(NULL) + 
+        ggplot2::xlab(NULL) +
+        ggplot2::theme(
+          legend.position = "none",
+          axis.text.y = ggplot2::element_blank(),
+          axis.ticks.y = ggplot2::element_blank()
+          )
 
       #join both plots
-      exprchanges1 <- grid.arrange(exprchanges1,
+      exprchanges1 <- gridExtra::grid.arrange(exprchanges1,
                                    exprlevelplot,
-                                   ncol=2, widths=c(0.8, 0.2))
+                                   ncol=2, 
+                                   widths=c(0.8, 0.2))
     }
   } else {
-    error("unknown key in barplotviz")
+    stop("unknown key in barplotviz")
   }
   # plot the relchange of each gene for each celltype as tile plot
   # each tile corresponds to one gene and the color expresses the relchange stored in diff
   # relchange is the relative change between both bulkgroups in avgexpr
   exprchanges2 <- diff %>%
-    filter(celltype != "total_explained") %>%
-    ggplot(aes(y=factor(gene, rev(ord_genes)), x = factor(celltype, levels = ctypes), fill=.data[[heatmapviz]])) +
-    geom_tile() +
-    scale_fill_gradient2(low="blue", mid="white", high="red", limits=c(-limits, limits), oob=scales::squish) +
-    ylab(NULL) + xlab(NULL) +
-    theme(axis.ticks.y = element_blank(), axis.text.y = element_blank(), legend.position = "none", plot.margin=margin(0,0,0,2,"cm"))
+    dplyr::filter(celltype != "total_explained") %>%
+    ggplot2::ggplot(
+      ggplot2::aes(
+        y=factor(gene, rev(ord_genes)),
+        x = factor(celltype, levels = ctypes),
+        fill=.data[[heatmapviz]]
+        )
+      ) +
+    ggplot2::geom_tile() +
+    ggplot2::scale_fill_gradient2(
+      low="blue",
+      mid="white",
+      high="red",
+      limits=c(-limits, limits),
+      oob=scales::squish
+      ) +
+    ggplot2::ylab(NULL) + 
+    ggplot2::xlab(NULL) +
+    ggplot2::theme(
+      axis.ticks.y = ggplot2::element_blank(),
+      axis.text.y = ggplot2::element_blank(),
+      legend.position = "none",
+      plot.margin=grid::unit(c(0,0,0,2),"cm")
+      )
 
-  p <- grid.arrange(exprchanges1, exprchanges2, ncol=2, widths=c(0.5, 0.5))
+  p <- gridExtra::grid.arrange(exprchanges1, exprchanges2, ncol=2, widths=c(0.5, 0.5))
 
   return(p)
 }

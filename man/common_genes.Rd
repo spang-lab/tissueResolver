@@ -23,7 +23,7 @@ and brings them in the same ordering.
 Additionally it will report if less than 20\% of the genes are in common
 }
 \examples{
-set.seed(1)
+set.seed(42)
 ngenes <- 4
 nbulks <- 3
 ncells <- 5
