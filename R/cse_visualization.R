@@ -100,6 +100,12 @@ plot_csre <- function(
   
   # retrieve bulk groups from csre tibble (e.g. GCB vs. ABC)
   groups <- csre %>% dplyr::pull(group) %>% unique() %>% sort()
+
+  # change celltype column to character to avoid errors
+  if( csre[["celltype"]] %>% class() != "character" ) {
+    csre <- csre %>% dplyr::mutate(celltype = as.character(celltype))
+  }
+
   if( is.na(groupA) || is.na(groupB) ){
     stop("no groups given.")
   }
@@ -129,7 +135,8 @@ plot_csre <- function(
     # compute cumulated sums over these groups
     dplyr::mutate(expression = sum(expression)) %>%
     dplyr::mutate(regulation = sum(regulation)) %>%
-    unique() %>% dplyr::ungroup() %>%
+    unique() %>% 
+    dplyr::ungroup() %>%
     # consider only the two bulk groups A and B
     dplyr::filter(group %in% c(groupA, groupB)) %>%
     # group across bulk group, gene and celltype
@@ -149,12 +156,13 @@ plot_csre <- function(
     dplyr::filter(celltype == "total_explained") %>% 
     dplyr::select(group, gene, avgexpr)
 
-
   diff <- groupavg %>%
     # join group avarage and total explained avarage 
     # and add the total_expr column giving the total expression across cells
-    dplyr::inner_join(total_explained %>% 
-    dplyr::rename(total_expr = avgexpr), by=c("group", "gene")) %>%
+    dplyr::inner_join(
+      total_explained %>% 
+        dplyr::rename(total_expr = avgexpr), by=c("group", "gene")
+      ) %>%
     # give avgexpr, avgreg and total_expr separate columns for both bulkgroups A and B
     tidyr::pivot_wider(
       names_from = group,

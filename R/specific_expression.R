@@ -101,10 +101,10 @@ fast_specific_expression_regulation <- function(
 
   # for each cell type (by) and bulk (bulk_id) calculate the average expression 
   csre <- do.call(rbind,
-    tapply(celldf, celldf[[by]], function(df_ct) {
+    lapply(split(celldf, celldf[[by]]), function(df_ct) {
 
       do.call(rbind, 
-        tapply(df_ct, df_ct[[bulk_id]], function(df_ct_bulk) {
+        lapply(split(df_ct, df_ct[[bulk_id]]), function(df_ct_bulk) {
           
           # get current cell IDs and weights
           cellids <- df_ct_bulk[[cell_id]]
