@@ -8,7 +8,7 @@ weighting the single cell gene expressions
 optimally match the bulk gene expressions
 The bulks are fit in parallel on multiple cores}
 \usage{
-fit_tissue_noboot(bulkdata, sclibrary, maxit = 2000, ncores = 1)
+fit_tissue_noboot(bulkdata, sclibrary, maxit = 20000, ncores = 1)
 }
 \arguments{
 \item{bulkdata}{matrix containing the gene expression of
@@ -52,6 +52,6 @@ rownames(bulks) <- genenames_bulks
 rownames(sc) <- genenames_sc
 colnames(bulks) <- bulknames
 colnames(sc) <- cellnames
-fitted_tissue <- tissueResolver:::fit_tissue_noboot(bulks, sc, 2e3, 2)
+fitted_tissue <- tissueResolver:::fit_tissue_noboot(bulks, sc, 2e4, 2)
 
 }

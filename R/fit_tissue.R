@@ -35,9 +35,9 @@
 #' rownames(sc) <- genenames_sc
 #' colnames(bulks) <- bulknames
 #' colnames(sc) <- cellnames
-#' fitted_tissue <- tissueResolver:::fit_tissue_noboot(bulks, sc, 2e3, 2)
+#' fitted_tissue <- tissueResolver:::fit_tissue_noboot(bulks, sc, 2e4, 2)
 #'
-fit_tissue_noboot <- function(bulkdata, sclibrary, maxit = 2e3, ncores = 1) {
+fit_tissue_noboot <- function(bulkdata, sclibrary, maxit = 2e4, ncores = 1) {
   message(paste0("fitting ", ncol(bulkdata), " bulks..."))
   if (tibble::is_tibble(sclibrary)) {
     sclibrary <- df_to_matrix(sclibrary)
@@ -85,6 +85,7 @@ fit_tissue_noboot <- function(bulkdata, sclibrary, maxit = 2e3, ncores = 1) {
     dr <- 2 * r
     return(-t(dr) %*% x)
   }
+
   # function for fitting a single bulk, will be called in parallel below
   fit_one_bulk <- function(bulk_id) {
 
@@ -103,15 +104,15 @@ fit_tissue_noboot <- function(bulkdata, sclibrary, maxit = 2e3, ncores = 1) {
       control = list(maxit = maxit, trace = 1),
       bulk_id
     ))
+
     # message status concerning convergence of optimizer
     convergence <- res$convergence
+
     if (convergence == 1) {
-      stop(paste0("iteration limit of", maxit, "has been reached"))
-    }
-    if (convergence == 51) {
-      stop(res$message)
-    }
-    if (convergence == 52) {
+      message(paste0("iteration limit of ", maxit, " has been reached"))
+    } else if (convergence == 51) {
+      message(res$message)
+    } else if (convergence == 52) {
       stop(res$message)
     }
 
@@ -141,8 +142,25 @@ fit_tissue_noboot <- function(bulkdata, sclibrary, maxit = 2e3, ncores = 1) {
   }
   # parallel execution of fitting bulks on ncores
   # bind all results together, note that mclapply keeps order of bulks
-  all_fits <- parallel::mclapply(bulk_ids, fit_one_bulk, mc.cores = min(ncores, length(bulk_ids)))
+  all_fits <- parallel::mclapply(
+    bulk_ids,
+    function(bulk_id) {
+      # use tryCatch to capture errors in parallel execution
+      tryCatch(
+        fit_one_bulk(bulk_id),
+        error = function(e) list(error = e$message)
+      )
+    },
+    mc.cores = min(ncores, length(bulk_ids))
+  )
 
+  # Check for errors and stop if any
+  errors <- sapply(all_fits, function(x) !is.null(x$error))
+  if (any(errors)) {
+    stop(all_fits[[which(errors)[1]]]$error)
+  }
+
+  # save results as tibble
   result <- tibble::tibble()
   log_store <- tibble::tibble()
 
@@ -177,7 +195,7 @@ fit_tissue_noboot <- function(bulkdata, sclibrary, maxit = 2e3, ncores = 1) {
 #' a bulk sample in each column. Rownames are expected to be gene identifieres
 #' @param sclibrary tibble or matrix containing a single cell profile in
 #' each column. Rownames are expected to be gene identifieres
-#' @param maxit the iteration limit used in the optimization algorithm, defaults to 2e3
+#' @param maxit the iteration limit used in the optimization algorithm, defaults to 2e4
 #' @param bootstrap if set to FALSE fit tissue without bootstrapping.
 #' If set to true select bootstrap_pctcells perecent of cells
 #' and perform bootstrap_nruns of sampling cells and fitting these to bulks
@@ -229,7 +247,7 @@ fit_tissue_noboot <- function(bulkdata, sclibrary, maxit = 2e3, ncores = 1) {
 #'
 fit_tissue <- function(bulkdata,
                            sclibrary,
-                           maxit = 2e3,
+                           maxit = 2e4,
                            bootstrap = FALSE,
                            bootstrap_nruns = 50,
                            bootstrap_pctcells = 10,
@@ -271,16 +289,28 @@ fit_tissue <- function(bulkdata,
       )
 
     # set up progress bar
-    pb <- utils::txtProgressBar(min = 0, max = bootstrap_nruns, initial = 0, style = 3)
+    pb <- utils::txtProgressBar(
+      min = 0,
+      max = bootstrap_nruns,
+      initial = 0,
+      style = 3
+    )
 
     for (irun in 1:bootstrap_nruns) {
       # sample ncells from the sc library (sample is different in each run)
       take_cells <- sample(colnames(sclibrary), ncells, replace = TRUE)
 
       # fit this sampled library to bulk
-      this_model <- suppressMessages(
-        fit_tissue_noboot(bulkdata, sclibrary[, take_cells], maxit, ncores)
-        )
+      # using tryCatch to capture errors
+      this_model <- tryCatch(
+        suppressMessages(
+            fit_tissue_noboot(bulkdata, sclibrary[, take_cells], maxit, ncores)
+          ),
+        error = function(e) {
+          message("")
+          stop(paste("Convergance failed in bootstrap run", irun, ":", e$message), call. = FALSE)
+        }
+      )
 
       # for each run store fitted_genes and tissuemodels
       result$fitted_genes <- this_model$fitted_genes

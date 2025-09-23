@@ -12,7 +12,7 @@ The bulks are fit in parallel on multiple cores}
 fit_tissue(
   bulkdata,
   sclibrary,
-  maxit = 2000,
+  maxit = 20000,
   bootstrap = FALSE,
   bootstrap_nruns = 50,
   bootstrap_pctcells = 10,
@@ -26,7 +26,7 @@ a bulk sample in each column. Rownames are expected to be gene identifieres}
 \item{sclibrary}{tibble or matrix containing a single cell profile in
 each column. Rownames are expected to be gene identifieres}
 
-\item{maxit}{the iteration limit used in the optimization algorithm, defaults to 2e3}
+\item{maxit}{the iteration limit used in the optimization algorithm, defaults to 2e4}
 
 \item{bootstrap}{if set to FALSE fit tissue without bootstrapping.
 If set to true select bootstrap_pctcells perecent of cells
