@@ -55,42 +55,66 @@
 #'@export
 
 quality_scores <- function(csre, bulks) {
+
   if( ! "total_explained" %in% (csre %>% dplyr::pull(celltype) %>% unique())) {
-    stop("need total explained gene expression in celldf. Call specific_expression_regulation with compute_total=TRUE.")
+    stop(
+      "need total explained gene expression in celldf. 
+      Call specific_expression_regulation with compute_total=TRUE."
+      )
   }
+
   bulkdata <- promote_matrix(bulks)
+
   if( ncol(bulkdata) < 20 ) {
     warning("small number of bulks. quality scores will be unreliable.")
   }
+
   bulknames <- intersect(
     colnames(bulkdata),
     csre %>% dplyr::pull(bulk_id) %>% unique()
     )
+
   bulkdf <- tidyr::as_tibble(bulkdata) %>%
     tibble::add_column(gene = rownames(bulkdata)) %>%
-    tidyr::pivot_longer(-gene, values_to = "bulk_expression", names_to = "bulk_id")
+    tidyr::pivot_longer(
+      -gene,
+      values_to = "bulk_expression",
+      names_to = "bulk_id"
+      )
+
   total_fitted <- csre %>%
     dplyr::filter(bulk_id %in% bulknames) %>%
     dplyr::filter(celltype == "total_explained") %>%
     dplyr::ungroup() %>%
     dplyr::select(-celltype)
+
   total_fitted <- total_fitted %>%
     dplyr::inner_join(bulkdf, by=c("gene", "bulk_id"))
+
   relres_score <- function(vec, bulkexpr) {
-    # this function works both for vectors as well as scalars and can be used in the bootstrap and the non-bootstrap version.
+    # this function works both for vectors as well as
+    # scalars and can be used in the bootstrap and the non-bootstrap version.
     v = abs(vec - bulkexpr) / (vec + bulkexpr)
-    v[is.na(v)] = 0.0 # if denom is zero, the fit is still perfect and there is no deviation.
+    # if denom is zero, the fit is still perfect w/o deviation
+    v[is.na(v)] = 0.0
     return(v)
   }
+
   if( "expression_boot" %in% names(csre) ) {
+
     # is a bootstrap run.
     res <- total_fitted %>%
       dplyr::rowwise() %>%
-	    dplyr::mutate(relres_boot = list(relres_score(expression_boot, bulk_expression))) %>%
+	    dplyr::mutate(relres_boot = list(
+        relres_score(expression_boot, bulk_expression)
+        )) %>%
       dplyr::mutate(relres = mean(relres_boot)) %>%
       dplyr::mutate(relres_var = stats::var(relres_boot)) %>%  # relres
 		  dplyr::ungroup() %>%
-      dplyr::select(bulk_id, gene, relres, relres_var, expression, bulk_expression)
+      dplyr::select(
+        bulk_id, gene, relres, relres_var, expression, bulk_expression
+      )
+
     gene_qc <- res %>%
       dplyr::group_by(gene) %>%
       dplyr::summarise(
@@ -100,20 +124,28 @@ quality_scores <- function(csre, bulks) {
         expression = mean(expression),
         bulk_expression = mean(bulk_expression)
         )
-    bulk_qc <- res %>%
-    dplyr::group_by(bulk_id) %>%
-    dplyr::summarise(
-      relres_sample_var = stats::var(relres),
-      relres = mean(relres),
-      relres_mean_var = mean(relres_var)
-    )
-  } else {
-    res <- total_fitted %>% 
-      dplyr::mutate(relres = list(relres_score(expression, bulk_expression))) %>%
-      dplyr::ungroup() %>%
-      dplyr::select(bulk_id, gene, relres, expression, bulk_expression) 
 
-    gene_qc <- res %>% 
+    bulk_qc <- res %>%
+      dplyr::group_by(bulk_id) %>%
+      dplyr::summarise(
+        relres_sample_var = stats::var(relres),
+        relres = mean(relres),
+        relres_mean_var = mean(relres_var)
+      )
+
+  } else {
+
+    # no bootstrap run
+    res <- total_fitted %>%
+      dplyr::mutate(
+        relres = relres_score(expression, bulk_expression)
+        ) %>%
+      dplyr::ungroup() %>%
+      dplyr::select(
+        bulk_id, gene, relres, expression, bulk_expression
+        )
+
+    gene_qc <- res %>%
       dplyr::group_by(gene) %>%
       dplyr::summarise(
         relres_sample_var = stats::var(relres),
@@ -121,6 +153,7 @@ quality_scores <- function(csre, bulks) {
         expression = mean(expression),
         bulk_expression = mean(bulk_expression)
       )
+
     bulk_qc <- res %>% 
       dplyr::group_by(bulk_id) %>%
       dplyr::summarise(
@@ -128,5 +161,7 @@ quality_scores <- function(csre, bulks) {
         relres = mean(relres)
       )
   }
+
   return(list(genes = gene_qc, bulks = bulk_qc))
+
 }

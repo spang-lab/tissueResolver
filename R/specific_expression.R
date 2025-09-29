@@ -269,7 +269,7 @@ specific_expression_regulation <- function(
       } else {
 
         # for all other iterations combine expression and regualtion as a list
-        csre <- csre %>% 
+        csre <- csre %>%
           dplyr::full_join(curr_csre, by = c(bulk_id, by, "gene")) %>%
           dplyr::rowwise() %>%
           dplyr::mutate(

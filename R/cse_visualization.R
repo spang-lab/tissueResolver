@@ -198,7 +198,7 @@ plot_csre <- function(
     tidyr::drop_na() %>%
     # give each gene a separate column storing the heatmapviz value for each celltype
     tidyr::pivot_wider(
-      celltype,
+      id_cols=celltype,
       names_from=gene,
       values_from=dplyr::all_of(heatmapviz)
       ) %>%
@@ -233,7 +233,7 @@ plot_csre <- function(
     groupavg <- groupavg %>% 
       dplyr::filter(celltype != "total_explained") %>%
       # encode group column as factor type
-      dplyr::mutate(dplyr::across(group, factor, levels=c(groupA, groupB)))
+      dplyr::mutate(dplyr::across(group, \(x) factor(x, levels=c(groupA, groupB))))
     exprchanges1 <-
       groupavg %>%
       # create for each bulk group a barplot, where for each gene the avgexpression contribution of each cell type
@@ -255,7 +255,7 @@ plot_csre <- function(
     # logp1 transform the avg total expression
     plotdf <- total_explained %>%
       dplyr::mutate(logexpr = log2(avgexpr+1.0)) %>% dplyr::select(-avgexpr) %>%
-      dplyr::mutate(dplyr::across(group, factor, levels=c(groupA, groupB)))
+      dplyr::mutate(dplyr::across(group, \(x) factor(x, levels=c(groupA, groupB))))
     # create for each bulk group a barplot, where for each gene the logp1 avg total expression
     # is visualized by the length of the bar
     exprchanges1 <- plotdf %>%
@@ -274,7 +274,7 @@ plot_csre <- function(
       dplyr::mutate(logexpr = log2(avgexpr+1.0)) %>%
       dplyr::select(-avgexpr) %>%
       tidyr::pivot_wider(names_from=group, values_from=logexpr) %>%
-      dplyr::rename(group_A = groupA, group_B = groupB) %>%
+      dplyr::rename(group_A = all_of(groupA), group_B = all_of(groupB)) %>%
       dplyr::mutate(logdiff=group_A-group_B) %>%
       ggplot2::ggplot(ggplot2::aes(x=logdiff, y=factor(gene, rev(ord_genes)))) +
       ggplot2::geom_bar(stat="identity", position="stack") +
@@ -339,7 +339,7 @@ plot_csre <- function(
       # logp1 transform it
       exprlevelplot <-
         total_explained %>%
-        dplyr::filter(group == dplyr::all_of(groupA)) %>%
+        dplyr::filter(group == groupA) %>%
         dplyr::select(-group) %>%
         dplyr::mutate(logexpr = log2(avgexpr+1)) %>%
         # the barplot show the logp1 transformed avgexpression of groupA

@@ -179,7 +179,8 @@ fit_tissue_noboot <- function(bulkdata, sclibrary, maxit = 2e4, ncores = 1) {
   return(list(
     tissuemodel = result,
     fitted_genes = genes,
-    log_store = log_store
+    log_store = log_store,
+    bootstrap = FALSE
   ))
 }
 
@@ -329,7 +330,6 @@ fit_tissue <- function(bulkdata,
   } else {
     message("Fitting tissue models without bootstrapping:")
     tm <- fit_tissue_noboot(bulkdata, sclibrary, maxit, ncores)
-    tm$bootstrap <- FALSE
     return(tm)
   }
 }

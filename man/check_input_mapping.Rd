@@ -45,6 +45,6 @@ mapping <- tibble(
   celltype = c("CTA", "CTB", "CTA", "CTB", "CTA")
 )
 
-tissueResolver:::check_input_mapping(fitted_tissue, mapping, by = "cell_id", cell_id = "cell_id")
+tissueResolver:::check_input_mapping(fitted_tissue, mapping, by = "celltype", cell_id = "cell_id")
 
 }

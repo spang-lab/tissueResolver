@@ -155,9 +155,10 @@ check_input_se <- function(celldf, sclibrary, by, weight, bulk_id, cell_id) {
   if (!tibble::is_tibble(celldf)) {
     stop("celldf must be a tibble")
   }
-  if (!all(sapply(celldf %>% dplyr::pull(cell_id), function(x) {
-    x %in% colnames(sclibrary)
-  }))) {
+  if (
+    !all(sapply(celldf %>% dplyr::pull(cell_id),
+    function(x) {x %in% colnames(sclibrary)}))
+    ) {
     stop("celldf contains weights of cells that are not in the count matrix.")
   }
   # in explained_expression by will be set to false because we do not want it to be checked here
@@ -165,7 +166,7 @@ check_input_se <- function(celldf, sclibrary, by, weight, bulk_id, cell_id) {
     stop(paste0("by-selection (\"", by, "\") is not a name of celldf"))
   }
   if (!weight %in% names(celldf)) {
-    stop(paste0("weights (\"", weights, "\") is not a name of celldf"))
+    stop(paste0("weight (\"", weight, "\") is not a name of celldf"))
   }
   if (!bulk_id %in% names(celldf)) {
     stop(paste0("bulk_id (\"", bulk_id, "\") is not a name of celldf"))
@@ -325,13 +326,13 @@ matrix_to_df <- function(genematrix, rows="gene", cols= "cell_id", values = "exp
 #'   celltype = c("CTA", "CTB", "CTA", "CTB", "CTA")
 #' )
 #' 
-#' tissueResolver:::check_input_mapping(fitted_tissue, mapping, by = "cell_id", cell_id = "cell_id")
+#' tissueResolver:::check_input_mapping(fitted_tissue, mapping, by = "celltype", cell_id = "cell_id")
 #' 
-check_input_mapping <- function(tissuemodel, mapping, by, cell_id){
+check_input_mapping <- function(tissuemodel, mapping, by, cell_id) {
   if( ! by %in% names(mapping)) {
     stop(paste0("categorizing column by (=", by, ") is not a column name of the mapping dataframe"))
   }
-  if( ! (cell_id %in% names(tissuemodel$tissuemodel)) && (cell_id %in% names(mapping))) {
+  if( !(cell_id %in% names(tissuemodel$tissuemodel)) || !(cell_id %in% names(mapping))) {
     stop(paste0("cell_id column (", cell_id, ") is not a column name of both tissuemodel and the mapping dataframe"))
   }
   if( length(intersect(tissuemodel$tissuemodel[[cell_id]], mapping[[cell_id]])) == 0){
@@ -371,7 +372,7 @@ check_input_mapping <- function(tissuemodel, mapping, by, cell_id){
 is_tissuemodel <- function(tissuemodel) {
   has_fields <- "tissuemodel" %in% names(tissuemodel) && "fitted_genes" %in% names(tissuemodel)
   if( ! has_fields ) {
-    return(FALSE) 
+    return(FALSE)
   }
   return(length(tissuemodel$fitted_genes) > 0)
 }
