@@ -2,19 +2,17 @@
 % Please edit documentation in R/util.R
 \name{check_input_dimensions}
 \alias{check_input_dimensions}
-\title{Checks if the number
-of genes of bulk data and the single cell library match.}
+\title{Check input dimensions of bulk and single cell data}
 \usage{
 check_input_dimensions(y, x)
 }
 \arguments{
-\item{y}{matrix representing the single cell library}
+\item{y}{A matrix representing the single cell library.}
 
-\item{x}{matrix representing the collection of bulk samples}
+\item{x}{A matrix representing the collection of bulk samples.}
 }
 \description{
-Checks if the number
-of genes of bulk data and the single cell library match.
+Checks if the number of genes of bulk data and the single cell library match.
 }
 \examples{
 set.seed(42)
@@ -36,6 +34,5 @@ common <- tissueResolver:::common_genes(bulks, sc)
 bulks_common <- common$A
 sc_common <- common$B
 tissueResolver:::check_input_dimensions(bulks_common, sc_common)
-
 
 }

@@ -2,28 +2,32 @@
 % Please edit documentation in R/util.R
 \name{check_input_se}
 \alias{check_input_se}
-\title{checks if the input for fast_specific_expression_regulation is valid}
+\title{Check input for \code{fast_specific_expression_regulation()}}
 \usage{
 check_input_se(celldf, sclibrary, by, weight, bulk_id, cell_id)
 }
 \arguments{
-\item{celldf}{dataframe composed of tissuemodel returned by fit_tissue and mapping prescribing the mapping of cell_ids to cell types}
+\item{celldf}{A dataframe composed of tissuemodel returned by \code{fit_tissue()}
+and a mapping prescribing the mapping of cell_ids to cell types.}
 
-\item{sclibrary}{single cell data matrix, columns are individual cells and must be indexable by the cell_ids contained in the celldf}
+\item{sclibrary}{A single cell data matrix, columns are individual cells and
+must be indexable by the \code{cell_id} contained in the \code{celldf}.}
 
-\item{by}{name of the categorical variable defining groups of cells}
+\item{by}{The name of the categorical variable defining groups of cells}
 
-\item{weight}{name of the column that holds the fitted cell weights}
+\item{weight}{The name of the column that holds the fitted cell weights}
 
-\item{bulk_id}{name of the column that identifies the bulks}
+\item{bulk_id}{The name of the column that identifies the bulks}
 
-\item{cell_id}{name of the column that contains the ids for the cells that match the column names of sclibrary}
+\item{cell_id}{The name of the column that contains the ids for the cells
+that match the column names of \code{sclibrary}}
 }
 \value{
-nothing
+Nothing.
 }
 \description{
-checks if the input for computing specific expression is valid (accessed by fast_specific_expression_regulation)
+Checks if the input for computing specific expression is valid (accessed by
+\code{fast_specific_expression_regulation()})
 }
 \examples{
 library(dplyr)
@@ -62,4 +66,5 @@ tissueResolver:::check_input_se(
   bulk_id = "bulk_id",
   cell_id = "cell_id"
 )
+
 }

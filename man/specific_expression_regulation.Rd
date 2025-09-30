@@ -2,7 +2,7 @@
 % Please edit documentation in R/specific_expression.R
 \name{specific_expression_regulation}
 \alias{specific_expression_regulation}
-\title{computes specific expression and regulation}
+\title{Compute the specific expression and regulation from a tissuemodel}
 \usage{
 specific_expression_regulation(
   tissuemodel,
@@ -16,29 +16,40 @@ specific_expression_regulation(
 )
 }
 \arguments{
-\item{tissuemodel}{tissuemodel as returned by fit_tissue}
+\item{tissuemodel}{A tissuemodel (tibble) as returned by ´fit_tissue()´}
 
-\item{sclibrary}{single cell data matrix, columns are individual cells and must be indexable by the cell_ids contained in the celldf.}
+\item{sclibrary}{A single cell data matrix, columns are individual cells and
+must be indexable by ´cell_id´ contained in the ´tissuemodel´.}
 
-\item{mapping}{dataframe that maps each cell (column name given by cell_id) to a category (column name given by "by")}
+\item{mapping}{A dataframe that maps each cell (column name given by
+´cell_id´) to a category (column name given by ´by´).}
 
-\item{by}{name of the categorical variable defining groups of cells. defaults to "celltype"}
+\item{by}{The name of the categorical variable defining the groups of cells.
+Defaults to ´"celltype"´.}
 
-\item{weight}{name of the column that holds the fitted cell weights. defaults to "weight"}
+\item{weight}{The name of the column that holds the fitted cell weights.
+Defaults to ´"weight"´.}
 
-\item{bulk_id}{name of the column that identifies the bulks. defaults to "bulk_id"}
+\item{bulk_id}{The name of the column that identifies the bulks. Defaults to
+´"bulk_id"´.}
 
-\item{cell_id}{name of the column that contains the ids for the cells that match the column names of sclibrary. defaults to "cell_id"}
+\item{cell_id}{The name of the column that contains the IDs for the cells
+matching the column names of ´sclibrary´. Defaults to ´"cell_id"´.}
 
-\item{compute_total}{if set to TRUE, also computes the total expression explained by ALL cell types. Can be used to compare resulting virtual tissue to the bulk.}
+\item{compute_total}{If set to ´TRUE´, also compute the total expression
+explained by ALL cell types. Can be used to compare resulting virtual
+tissue to the bulk.}
 }
 \value{
-data frame holding the expression and regulation of each gene within each bulk and celltype.
+A tibble holding the expression and regulation of each gene
+within each bulk and celltype.
 }
 \description{
-computes specific expression and regulation specific for certain groups, weighting the individual cells accordingly.
-normalization of the expression column is such that the total expression of a gene is approximately that of the bulk,
-while the regulation column corresponds to the average expression of a single cell of that type.
+Compute the specific expression and regulation specific for certain groups,
+weighting the individual cells accordingly. Normalization of the expression
+column is such that the total expression of a gene is approximately that of
+the bulk, while the regulation column corresponds to the average expression
+of a single cell of that type.
 }
 \examples{
 library(tibble)

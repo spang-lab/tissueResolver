@@ -2,7 +2,7 @@
 % Please edit documentation in R/specific_expression.R
 \name{explained_expression}
 \alias{explained_expression}
-\title{computes TOTAL explained expression for quality control}
+\title{Compute TOTAL explained expression for quality control}
 \usage{
 explained_expression(
   tissuemodel,
@@ -14,25 +14,31 @@ explained_expression(
 )
 }
 \arguments{
-\item{tissuemodel}{tissuemodel as returned by fit_tissue}
+\item{tissuemodel}{A tissuemodel (tibble) as returned by ´fit_tissue()´}
 
-\item{sclibrary}{single cell data matrix, columns are individual cells and must be indexable by the cell_ids contained in the celldf.}
+\item{sclibrary}{A single cell data matrix, columns are individual cells and
+must be indexable by ´cell_id´ contained in the ´tissuemodel´.}
 
-\item{by}{name of the categorical variable. Here it  is only used as index and the corresponding value in the returned data frame will always be "total explained".
-In particular it is here not used to group cells. defaults to "celltype"}
+\item{by}{The name of the categorical variable defining the groups of cells.
+Defaults to ´"celltype"´.}
 
-\item{weight}{name of the column that holds the fitted cell weights. defaults to "weight"}
+\item{weight}{The name of the column that holds the fitted cell weights.
+Defaults to ´"weight"´.}
 
-\item{bulk_id}{name of the column that identifies the bulks. defaults to "bulk_id"}
+\item{bulk_id}{The name of the column that identifies the bulks. Defaults to
+´"bulk_id"´.}
 
-\item{cell_id}{name of the column that contains the ids for the cells that match the column names of sclibrary. defaults to "cell_id"}
+\item{cell_id}{The name of the column that contains the IDs for the cells
+matching the column names of ´sclibrary´. Defaults to ´"cell_id"´.}
 }
 \value{
-data frame holding the explained expression for each gene in each bulk
+A tibble holding the explained expression for each gene in each bulk.
 }
 \description{
-computes the TOTAL explained expression, i.e., the specific gene expression within each bulk.
-I.e., it uses the weights computed in fit tissue to determine the explained specific expression of each gene in each bulk sample without grouping cells.
+Computes the TOTAL explained expression, i.e., the specific gene expression
+within each bulk. I.e., it uses the weights computed in fit tissue to
+determine the explained specific expression of each gene in each bulk sample
+without grouping cells.
 }
 \examples{
 library(tibble)

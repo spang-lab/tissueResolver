@@ -1,15 +1,21 @@
-#' computes quality scores for each gene and for each bulk
-#' @description Computes gene-specific and sample-specific quality scores:
-#' This function computes the mean relative residual and avarage bootstrap variance for each gene and each bulk sample.
+#' Compute quality scores for genes and bulks
 #'
-#' @param csre the total explained expression obtained by fitting the sclibrary to the bulk tissue as given by explained_expression
-#' @param bulks dataframe containing the gene expression of one bulk sample in each colum
-#' 
-#' @return a list of dataframes:
-#' - genes: contains quality scores by gene + mean gene-wise actual and explained total expression
-#' - bulks: contains quality scores to judge individual virtual tissues
-#' 
-#' @examples 
+#' @description
+#' Computes gene-specific and sample-specific quality scores: This function
+#' computes the mean relative residual and average bootstrap variance for each
+#' gene and each bulk sample.
+#'
+#' @param csre The total explained expression obtained by fitting the
+#'    ´sclibrary´ to the bulk tissue as given by `explained_expression()`.
+#' @param bulks A dataframe containing the gene expression of one bulk sample in
+#'    each column.
+#'
+#' @return A list of dataframes:
+#' - ´genes´: Contains quality scores by gene + mean gene-wise actual and
+#'    explained total expression
+#' - ´bulks´: Contains quality scores to judge individual virtual tissues
+#'
+#' @examples
 #' library(tibble)
 #' set.seed(42)
 #' ngenes <- 4
@@ -50,29 +56,33 @@
 #'   cell_id = "cell_id",
 #'   compute_total = TRUE
 #' )
-#' 
+#'
 #' qc <- quality_scores(csre, bulks)
-#'@export
+#'
+#' @export
+#'
+quality_scores <- function(
+  csre,
+  bulks
+) {
 
-quality_scores <- function(csre, bulks) {
-
-  if( ! "total_explained" %in% (csre %>% dplyr::pull(celltype) %>% unique())) {
+  if (!"total_explained" %in% (csre %>% dplyr::pull(celltype) %>% unique())) {
     stop(
       "need total explained gene expression in celldf. 
       Call specific_expression_regulation with compute_total=TRUE."
-      )
+    )
   }
 
   bulkdata <- promote_matrix(bulks)
 
-  if( ncol(bulkdata) < 20 ) {
+  if (ncol(bulkdata) < 20) {
     warning("small number of bulks. quality scores will be unreliable.")
   }
 
   bulknames <- intersect(
     colnames(bulkdata),
     csre %>% dplyr::pull(bulk_id) %>% unique()
-    )
+  )
 
   bulkdf <- tidyr::as_tibble(bulkdata) %>%
     tibble::add_column(gene = rownames(bulkdata)) %>%
@@ -80,7 +90,7 @@ quality_scores <- function(csre, bulks) {
       -gene,
       values_to = "bulk_expression",
       names_to = "bulk_id"
-      )
+    )
 
   total_fitted <- csre %>%
     dplyr::filter(bulk_id %in% bulknames) %>%
@@ -89,28 +99,28 @@ quality_scores <- function(csre, bulks) {
     dplyr::select(-celltype)
 
   total_fitted <- total_fitted %>%
-    dplyr::inner_join(bulkdf, by=c("gene", "bulk_id"))
+    dplyr::inner_join(bulkdf, by = c("gene", "bulk_id"))
 
   relres_score <- function(vec, bulkexpr) {
     # this function works both for vectors as well as
     # scalars and can be used in the bootstrap and the non-bootstrap version.
-    v = abs(vec - bulkexpr) / (vec + bulkexpr)
+    v <- abs(vec - bulkexpr) / (vec + bulkexpr)
     # if denom is zero, the fit is still perfect w/o deviation
-    v[is.na(v)] = 0.0
-    return(v)
+    v[is.na(v)] <- 0.0
+    v
   }
 
-  if( "expression_boot" %in% names(csre) ) {
+  if ("expression_boot" %in% names(csre)) {
 
     # is a bootstrap run.
     res <- total_fitted %>%
       dplyr::rowwise() %>%
-	    dplyr::mutate(relres_boot = list(
+      dplyr::mutate(relres_boot = list(
         relres_score(expression_boot, bulk_expression)
-        )) %>%
+      )) %>%
       dplyr::mutate(relres = mean(relres_boot)) %>%
       dplyr::mutate(relres_var = stats::var(relres_boot)) %>%  # relres
-		  dplyr::ungroup() %>%
+      dplyr::ungroup() %>%
       dplyr::select(
         bulk_id, gene, relres, relres_var, expression, bulk_expression
       )
@@ -123,7 +133,7 @@ quality_scores <- function(csre, bulks) {
         relres_mean_var = mean(relres_var),
         expression = mean(expression),
         bulk_expression = mean(bulk_expression)
-        )
+      )
 
     bulk_qc <- res %>%
       dplyr::group_by(bulk_id) %>%
@@ -139,11 +149,11 @@ quality_scores <- function(csre, bulks) {
     res <- total_fitted %>%
       dplyr::mutate(
         relres = relres_score(expression, bulk_expression)
-        ) %>%
+      ) %>%
       dplyr::ungroup() %>%
       dplyr::select(
         bulk_id, gene, relres, expression, bulk_expression
-        )
+      )
 
     gene_qc <- res %>%
       dplyr::group_by(gene) %>%
@@ -162,6 +172,6 @@ quality_scores <- function(csre, bulks) {
       )
   }
 
-  return(list(genes = gene_qc, bulks = bulk_qc))
+  list(genes = gene_qc, bulks = bulk_qc)
 
 }

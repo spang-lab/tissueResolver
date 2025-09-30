@@ -2,7 +2,7 @@
 % Please edit documentation in R/cell_proportions.R
 \name{cell_proportions}
 \alias{cell_proportions}
-\title{computes cell type proportions from virtual tissues and label mappings}
+\title{Compute cell type proportions from tissuemodel}
 \usage{
 cell_proportions(
   tissuemodel,
@@ -14,24 +14,35 @@ cell_proportions(
 )
 }
 \arguments{
-\item{tissuemodel}{tissuemodel as returned by fit_tissue, or a data frame that contains cell ids, weights and a categorical variable, e.g., celltype}
+\item{tissuemodel}{A tissuemodel as returned by \code{fit_tissue()}, or a data
+frame that contains cell ids, weights and a categorical variable, e.g.,
+celltype.}
 
-\item{mapping}{dataframe that maps each cell (column name given by "cell_id") to a category (column name given by "by")}
+\item{mapping}{A dataframe that maps each cell (column name given by
+\code{cell_id}) to a category (column name given by \code{by}).}
 
-\item{by}{name of the categorical variable defining groups of cells. defaults to "celltype"}
+\item{by}{The name of the categorical variable defining groups of cells.
+Defaults to \code{"celltype"}.}
 
-\item{weight}{name of the column that holds the fitted cell weights. defaults to "weight"}
+\item{weight}{The name of the column that holds the fitted cell weights.
+Defaults to \code{"weight"}.}
 
-\item{bulk_id}{name of the column that identifies the bulks. defaults to "bulk_id"}
+\item{bulk_id}{The name of the column that identifies the bulks.
+Defaults to \code{"bulk_id"}.}
 
-\item{cell_id}{name of the column that identifies the cells. defaults to "cell_id"}
+\item{cell_id}{The name of the column that identifies the cells.
+Defaults to \code{"cell_id"}.}
 }
 \value{
-data frame holding the cumulated weights for each cell population within each bulk for each bootstrap run as a list in the weight_boot column.
-The weight column holds the mean over the bootstrap runs across each bulk-celltype group.
+A data frame holding the cumulated weights for each cell population
+within each bulk for each bootstrap run as a list in the \code{weight_boot}
+column, if the tissuemodel included bootstrapping. The \code{weight} column
+holds the mean over the bootstrap runs across each bulk-celltype group
+and the last column holds the percentage of each cell type within a bulk.
 }
 \description{
-returns the sum over weights of certain cell populations for each bootstrap (if enabled) run performed in fit_tissue
+Returns the sum over weights of certain cell populations (grouped by
+mapping) for each bulk for a \code{tissuemodel} retrieved by \code{fit_tissue()}.
 }
 \examples{
 library(tibble)
@@ -60,8 +71,6 @@ fitted_tissue_boot <- fit_tissue(
   bootstrap_pctcells = 50
 )
 
-
-
 mapping <- tibble(
   cell_id = cellnames,
   celltype = c("CTA", "CTB", "CTA", "CTB", "CTA")
@@ -75,4 +84,5 @@ cell_proportions_boot <- cell_proportions(
   bulk_id = "bulk_id",
   cell_id = "cell_id"
 )
+
 }

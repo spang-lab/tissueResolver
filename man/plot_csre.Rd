@@ -2,7 +2,7 @@
 % Please edit documentation in R/cse_visualization.R
 \name{plot_csre}
 \alias{plot_csre}
-\title{plots cell type specific expression comparing two bulk groups}
+\title{Plot the cell type specific expression between two bulk groups}
 \usage{
 plot_csre(
   csre,
@@ -15,36 +15,47 @@ plot_csre(
 )
 }
 \arguments{
-\item{csre}{object returned by specific_expression_regulation, with an added bulk group column}
+\item{csre}{An object returned by \code{specific_expression_regulation()} with
+an added \code{group} column that indicates the bulk group of each bulk.}
 
-\item{heatmapviz}{Quantity to show in the heat map.
-May be either "logdiffexpr" (for the logarithmic differential expression),
-"logdiffreg" (log differential regulation, per cell), or
-"relchange" (relative change in expression compared to the average of the two groups), or
-"relregchange" (relative change in regulation -- per cell -- compared to the average of the two groups)}
+\item{heatmapviz}{The quantity to show in the heat map. Can be set to
+\code{ "logdiffexpr"} (logarithmic differential expression), \code{"logdiffreg"}
+(log differential regulation per cell), \code{"relchange"} (relative change
+in expression compared to the average of the two groups), or
+\code{"relregchange"} (relative change in regulation per cell compared to
+the average of the two groups).}
 
-\item{barplotviz}{transformation to show in the bar plot for each gene
-May be either
-"linear", which will show the reconstructed gene expression of the two bulk groups as a stacked colored bar plot, or
-"log", showing the total log-expression in both groups, or
-"logdiff", showing the differential log-expression between the two groups in a single bar plot,
-"relative", or "relativeA" showing the group-A expression as 100\% fractions and the group-B relative to that.
-"relativeB", similarly, but normalized to the group-B expression}
+\item{barplotviz}{The transformation to show in the bar plot for each gene
+Can be set to:
+\itemize{
+\item \code{"linear"}: Show the reconstructed gene expression of the two bulk
+groups as a stacked colored bar plot.
+\item \code{"log"}: Show the total log-expression in both groups.
+\item \code{"logdiff"}: Show the differential log-expression between the two
+groups in a single bar plot.
+\item \code{"relative"}: Show the group-A expression as 100\% fractions and the
+group-B relative to that.
+\item \code{"relativeB"}: Similarly, but normalized to the group-B expression.
+}}
 
-\item{groupA}{identifier of bulk group A (factor in the group column)}
+\item{groupA}{The identifier of bulk group A (factor in the \code{group} column).}
 
-\item{groupB}{identifier of bulk group B (factor in the group column)}
+\item{groupB}{The identifier of bulk group B (factor in the \code{group} column).}
 
-\item{ctypes}{if non-NULL, the order in which the cell types will be displayed.
-All celltypes present in the dataset but not in this array will be summed as "other".}
+\item{ctypes}{If not \code{NULL}, the order in which the cell types will be
+displayed. All cell types present in the dataset but not in this array
+will be summed as \code{"other"}.}
 
-\item{addexpressionlevel}{if set to TRUE and barplotviz == relative, add an additional bar plot that indicates the expression level of the gene present in bulk group A}
+\item{addexpressionlevel}{If set to \code{TRUE} and \code{barplotviz = "relative"},
+add an additional bar plot that indicates the expression level of the
+gene present in bulk group A.}
 }
 \value{
-ggplot object
+A ggplot object.
 }
 \description{
-This function generates several bar and heatmapplots for comparing cell type specific expression comparing two bulk groups.
+This function generates several bar and heatmap plots for comparing the
+cell type specific expression between two bulk groups.
 }
 \examples{
 library(tibble)
@@ -97,7 +108,6 @@ csre <- csre \%>\%
   inner_join(grouping \%>\% dplyr::select(bulk_id, group)) \%>\%
   drop_na()
 
-
 csre_plot <- plot_csre(
   csre = csre,
   heatmapviz = "relchange",
@@ -109,4 +119,5 @@ csre_plot <- plot_csre(
 )
 
 print(csre_plot)
+
 }

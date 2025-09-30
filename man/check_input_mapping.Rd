@@ -2,24 +2,26 @@
 % Please edit documentation in R/util.R
 \name{check_input_mapping}
 \alias{check_input_mapping}
-\title{checks if the mapping (mapping cell_ids to celltypes) is valid}
+\title{Check input mapping for a \code{tissuemodel}}
 \usage{
 check_input_mapping(tissuemodel, mapping, by, cell_id)
 }
 \arguments{
-\item{tissuemodel}{tissuemodel as returned by fit_tissue}
+\item{tissuemodel}{A \code{tissuemodel} as returned by \code{fit_tissue()}.}
 
-\item{mapping}{dataframe that maps cell_ids to celltypes}
+\item{mapping}{A dataframe that maps cell_ids to celltypes.}
 
-\item{by}{the name of the column that categorizes the mapping dataframe}
+\item{by}{The name of the column that categorizes the mapping dataframe.}
 
-\item{cell_id}{name of the column in the mapping dataframe that names the single cells}
+\item{cell_id}{The name of the column in the mapping dataframe that names
+the single cells.}
 }
 \value{
-nothing
+Nothing.
 }
 \description{
-checks if the mapping dataframe is a valid mapping for the cells in tissuemodel
+Checks if the mapping dataframe is a valid mapping for the cells in
+\code{tissuemodel}.
 }
 \examples{
 library(tibble)
@@ -45,6 +47,8 @@ mapping <- tibble(
   celltype = c("CTA", "CTB", "CTA", "CTB", "CTA")
 )
 
-tissueResolver:::check_input_mapping(fitted_tissue, mapping, by = "celltype", cell_id = "cell_id")
+tissueResolver:::check_input_mapping(
+  fitted_tissue, mapping, by = "celltype", cell_id = "cell_id"
+)
 
 }

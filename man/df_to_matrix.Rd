@@ -2,27 +2,28 @@
 % Please edit documentation in R/util.R
 \name{df_to_matrix}
 \alias{df_to_matrix}
-\title{converts a tibble / dataframe to a matrix}
+\title{Convert a tibble or dataframe to a matrix}
 \usage{
 df_to_matrix(df, rows = "gene", cols = "cell_id", values = "expression")
 }
 \arguments{
-\item{df}{dataframe to be converted into matrix}
+\item{df}{A dataframe to be converted into matrix.}
 
-\item{rows}{name in the input dataframe that corresponds to the rows of the resulting matrix,
-defaults to gene}
+\item{rows}{The name in the input dataframe that corresponds to the rows of
+the resulting matrix, defaults to \code{"gene"}.}
 
-\item{cols}{name in the input dataframe that corresponds to the columns of the resulting matrix,
-defaults to cell_id}
+\item{cols}{The name in the input dataframe that corresponds to the columns
+of the resulting matrix, defaults to \code{"cell_id"}.}
 
-\item{values}{name in the input dataframe that will hold the entries of the resulting matrix,
-defaults to expression}
+\item{values}{The name in the input dataframe that will hold the entries of
+the resulting matrix, defaults to \code{"expression"}.}
 }
 \value{
-a matrix storing the dataframe's values
+A matrix storing the values of \code{df}.
 }
 \description{
-allows to call functions expecting matrices to be called with tibbles
+Convert a tibble or dataframe to a matrix to allows to call functions
+expecting matrices to be called with tibbles.
 }
 \examples{
 set.seed(42)

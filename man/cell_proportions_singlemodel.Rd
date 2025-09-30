@@ -2,7 +2,8 @@
 % Please edit documentation in R/cell_proportions.R
 \name{cell_proportions_singlemodel}
 \alias{cell_proportions_singlemodel}
-\title{computes cell type proportions for single model (no bootstrap)}
+\title{Compute cell type proportions from a single tissue model
+#############################################################################}
 \usage{
 cell_proportions_singlemodel(
   tissuemodel,
@@ -14,24 +15,33 @@ cell_proportions_singlemodel(
 )
 }
 \arguments{
-\item{tissuemodel}{tissuemodel as returned by fit_tissue WITHOUT bootstrapping, or a data frame that contains cell ids, weights and a categorical variable, e.g., celltype}
+\item{tissuemodel}{A \code{tissuemodel} as returned by \code{fit_tissue()} WITHOUT
+bootstrapping, or a data frame that contains cell ids, weights and a
+categorical variable, e.g., celltype.}
 
-\item{mapping}{dataframe that maps each cell (column name given by "cell_id") to a category (column name given by "by")}
+\item{mapping}{A dataframe that maps each cell (column name given by
+\code{cell_id}) to a category (column name given by \code{by}).}
 
-\item{by}{name of the categorical variable defining groups of cells. defaults to "celltype"}
+\item{by}{The name of the categorical variable defining groups of cells.
+Defaults to \code{"celltype"}.}
 
-\item{weight}{name of the column that holds the fitted cell weights. defaults to "weight"}
+\item{weight}{The name of the column that holds the fitted cell weights.
+Defaults to \code{"weight"}.}
 
-\item{bulk_id}{name of the column that identifies the bulks. defaults to "bulk_id"}
+\item{bulk_id}{The name of the column that identifies the bulks.
+Defaults to \code{"bulk_id"}.}
 
-\item{cell_id}{name of the column that identifies the cells. defaults to "cell_id"}
+\item{cell_id}{The name of the column that identifies the cells.
+Defaults to \code{"cell_id"}.}
 }
 \value{
-data frame holding the cumulated weights for each cell population within each bulk.
+A data frame holding the cumulated weights for each cell population
+within each bulk.
 }
 \description{
-returns the sum over weights of certain cell populations (grouped by mapping for each bulk)
-for a single tissue model retrieved by fit_tissue WITHOUT bootstrap.
+Returns the sum over weights of certain cell populations (grouped by
+mapping for each bulk) for a single tissue model retrieved by \code{fit_tissue()}
+WITHOUT bootstrap.
 }
 \examples{
 library(tibble)

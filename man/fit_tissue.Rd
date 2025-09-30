@@ -2,12 +2,7 @@
 % Please edit documentation in R/fit_tissue.R
 \name{fit_tissue}
 \alias{fit_tissue}
-\title{Fits a given single cell library to a collection of bulk samples by
-weighting the single cell gene expressions
-(the columns of the library matrix) in order to
-optimally match the bulk gene expressions.
-Allows for bootstrapping specified percentage of cells.
-The bulks are fit in parallel on multiple cores}
+\title{Fit a virtual tissue model from bulk samples using a single cell library}
 \usage{
 fit_tissue(
   bulkdata,
@@ -20,47 +15,53 @@ fit_tissue(
 )
 }
 \arguments{
-\item{bulkdata}{matrix containing the gene expression of
-a bulk sample in each column. Rownames are expected to be gene identifieres}
+\item{bulkdata}{matrix containing the gene expression of a bulk sample in
+each column. Rownames are expected to be gene identifiers.}
 
-\item{sclibrary}{tibble or matrix containing a single cell profile in
-each column. Rownames are expected to be gene identifieres}
+\item{sclibrary}{tibble or matrix containing a single cell profile in each
+column. Rownames are expected to be gene identifiers.}
 
-\item{maxit}{the iteration limit used in the optimization algorithm, defaults to 2e4}
+\item{maxit}{the iteration limit used in the optimization algorithm, defaults
+to ´2e4´.}
 
-\item{bootstrap}{if set to FALSE fit tissue without bootstrapping.
-If set to true select bootstrap_pctcells perecent of cells
-and perform bootstrap_nruns of sampling cells and fitting these to bulks}
+\item{bootstrap}{if set to FALSE fit tissue without bootstrapping. If set to
+´TRUE´ select ´bootstrap_pctcells´ percent of cells and perform
+´bootstrap_nruns´ of sampling cells and fitting these to bulks.}
 
-\item{bootstrap_nruns}{number of bootstrap runs}
+\item{bootstrap_nruns}{number of bootstrap runs.}
 
-\item{bootstrap_pctcells}{integer in [0,100] which prescribes the percentage of cells
-sampled from the single cell library in each bootstrap run}
+\item{bootstrap_pctcells}{integer in ´[0,100]´ which prescribes the
+percentage of cells sampled from the single cell library in each bootstrap
+run.}
 
-\item{ncores}{the number of cores for parallel computation}
+\item{ncores}{the number of cores for parallel computation.}
 }
 \value{
-if bootstrap is FALSE, returns a list with entries
+If ´bootstrap = FALSE´, return a list containing:
 \itemize{
-\item tissuemodel: a data frame which holds all weights for each ' selected cell (id) and the bulk id that it was fitted to.
-\item fitted_genes: a list of fitted gene names
-\item bootstrap: FALSE
-If bootstrap is TRUE it returns a list containing
-\item tissuemodels: a list of tissuemodels of every bootstrap run
-\item fitted_genes: a list of fitted gene names
-\item log_stores: a vector of log messages containing the residual per bulk and bootstrap run.
-\item bootstrap: TRUE
-\item bootstrap_nruns: number of bootstrap samples
-\item bootstrap_pctcells: percentage of all single cells that were used in every bootstrap run
+\item ´tissuemodel´: a data frame which holds all weights for each selected cell
+(id) and the bulk id that it was fitted to.
+\item ´fitted_genes´: a list of fitted gene names
+\item ´bootstrap´: ´FALSE´
+}
+
+If ´bootstrap = TRUE´, return a list containing:
+\itemize{
+\item ´tissuemodels´: a list of tissuemodels of every bootstrap run
+\item ´fitted_genes´: a list of fitted gene names
+\item ´log_stores´: a vector of log messages containing the residual per bulk
+and bootstrap run.
+\item ´bootstrap´: ´TRUE´
+\item ´bootstrap_nruns´: number of bootstrap samples
+\item ´bootstrap_pctcells´: percentage of all single cells that were used in
+every bootstrap run
 }
 }
 \description{
-Fits a given single cell library to a collection of bulk samples by
-weighting the single cell gene expressions
-(the columns of the library matrix) in order to
-optimally match the bulk gene expressions.
-Allows for bootstrapping specified percentage of cells.
-The bulks are fit in parallel on multiple cores
+Fits a given single cell library to a collection of bulk samples by weighting
+the single cell gene expressions (the columns of the library matrix) in order
+to optimally match the bulk gene expressions. Allows for bootstrapping with a
+specific percentage of cells and parallel fitting of bulks on multiple cores.
 }
 \examples{
 set.seed(42)
@@ -88,4 +89,5 @@ fitted_tissue <- fit_tissue(
    bootstrap_pctcells = 50,
    ncores = 2
  )
+
 }

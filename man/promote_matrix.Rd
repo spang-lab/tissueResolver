@@ -2,16 +2,17 @@
 % Please edit documentation in R/util.R
 \name{promote_matrix}
 \alias{promote_matrix}
-\title{Promotes a vector to a matrix. If the input is already a matrix, this matrix is returned.}
+\title{Promote a vector to a matrix}
 \usage{
-promote_matrix(v)
+promote_matrix(vec)
 }
 \arguments{
-\item{v}{matrix or vector}
+\item{vec}{A matrix or vector.}
 }
 \value{
-promoted matrix
+Promoted matrix.
 }
 \description{
-Promotes a vector to a matrix. If the input is already a matrix, this matrix is returned.
+Promotes a vector to a matrix. If the input is already a matrix, this matrix
+is returned.
 }

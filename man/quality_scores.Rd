@@ -2,25 +2,29 @@
 % Please edit documentation in R/quality_scores.R
 \name{quality_scores}
 \alias{quality_scores}
-\title{computes quality scores for each gene and for each bulk}
+\title{Compute quality scores for genes and bulks}
 \usage{
 quality_scores(csre, bulks)
 }
 \arguments{
-\item{csre}{the total explained expression obtained by fitting the sclibrary to the bulk tissue as given by explained_expression}
+\item{csre}{The total explained expression obtained by fitting the
+´sclibrary´ to the bulk tissue as given by \code{explained_expression()}.}
 
-\item{bulks}{dataframe containing the gene expression of one bulk sample in each colum}
+\item{bulks}{A dataframe containing the gene expression of one bulk sample in
+each column.}
 }
 \value{
-a list of dataframes:
+A list of dataframes:
 \itemize{
-\item genes: contains quality scores by gene + mean gene-wise actual and explained total expression
-\item bulks: contains quality scores to judge individual virtual tissues
+\item ´genes´: Contains quality scores by gene + mean gene-wise actual and
+explained total expression
+\item ´bulks´: Contains quality scores to judge individual virtual tissues
 }
 }
 \description{
-Computes gene-specific and sample-specific quality scores:
-This function computes the mean relative residual and avarage bootstrap variance for each gene and each bulk sample.
+Computes gene-specific and sample-specific quality scores: This function
+computes the mean relative residual and average bootstrap variance for each
+gene and each bulk sample.
 }
 \examples{
 library(tibble)
@@ -65,4 +69,5 @@ csre <- specific_expression_regulation(
 )
 
 qc <- quality_scores(csre, bulks)
+
 }

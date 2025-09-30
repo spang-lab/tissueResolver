@@ -60,13 +60,13 @@
 #' 
 # 
 kde2d_weighted <- function (
-                      x,
-                      y,
-                      weight,
-                      bandwidth = NULL,
-                      n.grid = 25,
-                      lims = c(range(x), range(y))
-                  ) {
+  x,
+  y,
+  weight,
+  bandwidth = NULL,
+  n.grid = 25,
+  lims = c(range(x), range(y))
+) {
   # number of data points: 
   n.x <- length(x)
   
@@ -144,7 +144,12 @@ kde2d_weighted <- function (
 #' )
 #' 
 #
-bulk_group_input <- function(bulkgroups, bulkidcol = "bulk_id", groupcol="group") {
+bulk_group_input <- function(
+  bulkgroups,
+  bulkidcol = "bulk_id",
+  groupcol="group"
+) {
+
   if(tibble::is_tibble(bulkgroups)) {
     if( ! bulkidcol %in% names(bulkgroups)) {
       stop(paste0(bulkidcol, " is not a column of the bulk group definition dataframe"))
@@ -163,6 +168,7 @@ bulk_group_input <- function(bulkgroups, bulkidcol = "bulk_id", groupcol="group"
   } else {
     stop("invalid input for bulkgroups")
   }
+
 }
 
 
@@ -226,7 +232,7 @@ density_distribution <- function(
   bulkgroups = NULL,
   bulk_groupids = "group",
   verbose = TRUE
-){
+) {
 
   # can deal with "full" tissuemodel, i.e. output of fit_tissue -> filter only tissuemodel tibble
   if( is_tissuemodel(tissuemodel) ) {
@@ -365,6 +371,7 @@ density_distribution <- function(
       )) %>% dplyr::mutate(group = groupid))
   }
   return(densities)
+
 }
 
 #' plots the single cell embedding
@@ -398,7 +405,13 @@ density_distribution <- function(
 #' 
 #' 
 #' 
-plot_element_embedding <- function(scembedding, x="UMAP1", y="UMAP2",colourby=NULL) {
+plot_element_embedding <- function(
+  scembedding,
+  x = "UMAP1",
+  y = "UMAP2",
+  colourby = NULL
+) {
+
   if( is.null(colourby) ) {
     return(
       ggplot2::geom_point(
@@ -425,6 +438,7 @@ plot_element_embedding <- function(scembedding, x="UMAP1", y="UMAP2",colourby=NU
       )
     )
   }
+
 }
 
 #' plots the differential density between two groups as a tile plot
@@ -483,13 +497,15 @@ plot_element_embedding <- function(scembedding, x="UMAP1", y="UMAP2",colourby=NU
 #'   coord_fixed())
 
 plot_element_differential_density <- function(
-                                        densities,
-                                        groupA = NA,
-                                        groupB = NA,
-                                        x="x",
-                                        y="y",
-                                        z="z",
-                                        group="group") {
+  densities,
+  groupA = NA,
+  groupB = NA,
+  x="x",
+  y="y",
+  z="z",
+  group="group"
+) {
+
   groups <- unique(densities[[group]])
   ngroups <- length(groups)
 
@@ -536,6 +552,7 @@ plot_element_differential_density <- function(
         )
       )
   )
+
 }
 
 
@@ -600,13 +617,15 @@ plot_element_differential_density <- function(
 #'
 #
 plot_differential_densities <- function(
-                                  densitydata,
-                                  scembedding = NULL,
-                                  groupA=NA,
-                                  groupB=NA,
-                                  embedding.x = "UMAP1",
-                                  embedding.y = "UMAP2",
-                                  colourby=NULL) {
+  densitydata,
+  scembedding = NULL,
+  groupA = NA,
+  groupB = NA,
+  embedding.x = "UMAP1",
+  embedding.y = "UMAP2",
+  colourby = NULL
+) {
+
   if( ! tibble::is_tibble(densitydata) || ! all(c("x", "y", "z", "group") %in% names(densitydata))) {
     stop("invalid densitydata. must have columns x, y, z and groups.")
   }
@@ -635,4 +654,5 @@ plot_differential_densities <- function(
     ggplot2::scale_fill_gradient2(low="blue", mid="white", high="red") +
     embedding
   )
+  
 }

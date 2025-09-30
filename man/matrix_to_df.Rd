@@ -2,7 +2,7 @@
 % Please edit documentation in R/util.R
 \name{matrix_to_df}
 \alias{matrix_to_df}
-\title{converts a matrix to a tibble}
+\title{Convert a matrix to a tibble}
 \usage{
 matrix_to_df(
   genematrix,
@@ -12,22 +12,23 @@ matrix_to_df(
 )
 }
 \arguments{
-\item{genematrix}{matrix to convert}
+\item{genematrix}{A matrix to convert.}
 
-\item{rows}{dedicated name in the resulting dataframe storing the row names of the input matrix,
-defaults to gene}
+\item{rows}{The dedicated name in the resulting dataframe storing the row
+names of the input matrix, defaults to \code{"gene"}.}
 
-\item{cols}{dedicated name in the resulting dataframe storing the coulmn names of the input matrix,
-default to cel_id}
+\item{cols}{The dedicated name in the resulting dataframe storing the column
+names of the input matrix, defaults to \code{"cell_id"}.}
 
-\item{values}{name in the resulting dataframe that holds the entries of the input matrix,
-defaults to expression}
+\item{values}{The dedicated name in the resulting dataframe that holds the
+entries of the input matrix, defaults to \code{"expression"}.}
 }
 \value{
-a tibble storing the matrix values and names
+A tibble storing the matrix values and names.
 }
 \description{
-allows to call functions expecting tibbles to be called with dataframes
+Convert a matrix to a tibble to allows to call functions expecting tibbles
+to be called with dataframes.
 }
 \examples{
 set.seed(42)

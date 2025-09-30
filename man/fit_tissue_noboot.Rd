@@ -2,25 +2,22 @@
 % Please edit documentation in R/fit_tissue.R
 \name{fit_tissue_noboot}
 \alias{fit_tissue_noboot}
-\title{fits a given single cell library to a collection of bulk samples by
-weighting the single cell gene expressions
-(the columns of the library matrix) in order to
-optimally match the bulk gene expressions
-The bulks are fit in parallel on multiple cores}
+\title{Fit a virtual tissue model to bulk samples using a single cell library}
 \usage{
 fit_tissue_noboot(bulkdata, sclibrary, maxit = 20000, ncores = 1)
 }
 \arguments{
-\item{bulkdata}{matrix containing the gene expression of
-a bulk sample in each column. Rownames are expected to be gene identifieres.}
+\item{bulkdata}{Input matrix containing the gene expression of a bulk sample
+in each column. Rownames are expected to be gene identifiers.}
 
-\item{sclibrary}{tibble or matrix containing a single cell profile in
-each column. Rownames are expected to be gene identifieres}
+\item{sclibrary}{Input tibble or matrix containing a single cell profile in
+each column. Rownames are expected to be gene identifiers.}
 
-\item{maxit}{the iteration limit used in the optimization algorithm, defaults to 2e4. This is very dataset specific,
-so if the provided value is not sufficient we advise to increase this value.}
+\item{maxit}{The iteration limit used in the optimization algorithm, defaults
+to ´2e4´. This is very dataset specific, so if the provided value is not
+sufficient we advise to increase this value.}
 
-\item{ncores}{the number of cores for parallel computation}
+\item{ncores}{The number of cores for parallel computation.}
 }
 \value{
 a list containing
@@ -29,11 +26,10 @@ a list containing
 -log_store: logging info for residual across iterations
 }
 \description{
-fits a given single cell library to a collection of bulk samples by
-weighting the single cell gene expressions
-(the columns of the library matrix) in order to
-optimally match the bulk gene expressions
-The bulks are fit in parallel on multiple cores
+Fits a given single cell library to a collection of bulk samples by weighting
+the single cell gene expressions (the columns of the library matrix) in order
+to optimally match the bulk gene expressions. The bulks can be fit in
+parallel on multiple cores.
 }
 \examples{
 set.seed(42)

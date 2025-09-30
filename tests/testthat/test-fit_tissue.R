@@ -1,13 +1,15 @@
 ### define required functions ###
 
 # original fit_tissue functon
-original_fit_tissue <- function(bulkdata,
-                          sclibrary,
-                          maxit = 2e3,
-                          bootstrap = FALSE,
-                          bootstrap_nruns = 50,
-                          bootstrap_pctcells = 10,
-                          ncores = 1) {
+original_fit_tissue <- function(
+  bulkdata,
+  sclibrary,
+  maxit = 2e3,
+  bootstrap = FALSE,
+  bootstrap_nruns = 50,
+  bootstrap_pctcells = 10,
+  ncores = 1
+) {
   if (bootstrap == TRUE) {
     if (!is.numeric(bootstrap_nruns)) {
       stop("bootstrap_nruns is not a number!")
@@ -27,12 +29,20 @@ original_fit_tissue <- function(bulkdata,
       fitted_genes = c()
     )
     for (irun in 1:bootstrap_nruns) {
-      message(paste0("bootstrap run ", irun, " of ", bootstrap_nruns, " (using ", ncells, " cells)"))
+      message(
+        paste0("bootstrap run ", irun, " of ",
+        bootstrap_nruns, " (using ", ncells, " cells)")
+      )
       # sample ncells from the sc library (sample is different in each run)
       take_cells <- sample(colnames(sclibrary), ncells, replace = TRUE)
 
       # fit this sampled library to bulk
-      this_model <- fit_tissue_noboot(bulkdata, sclibrary[, take_cells], maxit, ncores)
+      this_model <- fit_tissue_noboot(
+        bulkdata,
+        sclibrary[, take_cells],
+        maxit,
+        ncores
+      )
 
       # for each run store fitted_genes and tissuemodels
       result$fitted_genes <- this_model$fitted_genes
@@ -44,7 +54,12 @@ original_fit_tissue <- function(bulkdata,
     }
     return(result)
   } else {
-    tm <- fit_tissue_noboot(bulkdata, sclibrary, maxit, ncores)
+    tm <- fit_tissue_noboot(
+      bulkdata,
+      sclibrary,
+      maxit,
+      ncores
+    )
     tm$bootstrap <- FALSE
     return(tm)
   }
@@ -91,7 +106,6 @@ test_sclibrary <- matrix(
 
 # load pregenerated reference outputs
 out_fit_tissue_noboot <- readRDS("../testdata/out_fit_tissue_noboot.rds")
-out_fit_tissue <- readRDS("../testdata/out_fit_tissue.rds")
 
 ###
 
@@ -110,22 +124,8 @@ test_that("fit_tissue_noboot produces correct output", {
   )
 
   expect_equal(test_fit_tissue_noboot, out_fit_tissue_noboot)
-  
+
 })
-
-# test_that("fit_tissue produces correct output", {
-
-#   set.seed(123)
-#   test_fit_tissue <- fit_tissue(
-#     test_bulkdata,
-#     test_sclibrary,
-#     bootstrap = TRUE,
-#     bootstrap_nruns = 5,
-#     bootstrap_pctcells = 50
-#   )
-#   expect_equal(test_fit_tissue, out_fit_tissue)
-  
-# })
 
 test_that("fit_tissue and fit_tissue_noboot return equal outputs", {
 
@@ -154,7 +154,7 @@ test_that("fit_tissue produces correct output with bootstrapping", {
   # original function
   set.seed(123)
   original_fit_tissue <- suppressMessages(
-    fit_tissue(
+    original_fit_tissue(
       test_bulkdata,
       test_sclibrary,
       bootstrap = TRUE,

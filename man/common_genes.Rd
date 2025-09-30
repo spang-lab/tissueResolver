@@ -2,25 +2,23 @@
 % Please edit documentation in R/util.R
 \name{common_genes}
 \alias{common_genes}
-\title{Restricts rows of two matrices to the set of common genes
-and brings them in the same ordering.
-Additionally it will report if less than 20\% of the genes are in common}
+\title{Filter two matrices to their common genes}
 \usage{
-common_genes(A, B)
+common_genes(mat_A, mat_B)
 }
 \arguments{
-\item{A}{matrix A}
+\item{mat_A}{Matrix A.}
 
-\item{B}{matrix B}
+\item{mat_B}{Matrix B.}
 }
 \value{
-A list containing the input A and B
-but restricted to the set of common genes
+A list containing the input A and B but restricted to the set of
+common genes.
 }
 \description{
-Restricts rows of two matrices to the set of common genes
-and brings them in the same ordering.
-Additionally it will report if less than 20\% of the genes are in common
+Restricts rows of two matrices to the set of common genes and brings
+them in the same ordering. Additionally it will report if less than
+20\% of the genes are in common.
 }
 \examples{
 set.seed(42)
@@ -41,6 +39,5 @@ colnames(sc) <- cellnames
 common <- tissueResolver:::common_genes(bulks, sc)
 bulks_common <- common$A
 sc_common <- common$B
-
 
 }

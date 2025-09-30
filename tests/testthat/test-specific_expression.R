@@ -42,7 +42,8 @@ test_that("fast_specific_expression_regulation produces
     fast_specific_expression_regulation(
       out_fit_tissue_noboot,
       test_sclibrary,
-      mapping
+      mapping,
+      show_pb = FALSE
     )
   )
 

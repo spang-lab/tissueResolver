@@ -1,17 +1,19 @@
-#' fits a given single cell library to a collection of bulk samples by
-#' weighting the single cell gene expressions
-#' (the columns of the library matrix) in order to
-#' optimally match the bulk gene expressions
-#' The bulks are fit in parallel on multiple cores
+#' Fit a virtual tissue model to bulk samples using a single cell library
 #'
+#' @description
+#' Fits a given single cell library to a collection of bulk samples by weighting
+#' the single cell gene expressions (the columns of the library matrix) in order
+#' to optimally match the bulk gene expressions. The bulks can be fit in
+#' parallel on multiple cores.
 #'
-#' @param bulkdata matrix containing the gene expression of
-#' a bulk sample in each column. Rownames are expected to be gene identifieres.
-#' @param sclibrary tibble or matrix containing a single cell profile in
-#' each column. Rownames are expected to be gene identifieres
-#' @param maxit the iteration limit used in the optimization algorithm, defaults to 2e4. This is very dataset specific,
-#' so if the provided value is not sufficient we advise to increase this value.
-#' @param ncores the number of cores for parallel computation
+#' @param bulkdata Input matrix containing the gene expression of a bulk sample
+#'    in each column. Rownames are expected to be gene identifiers.
+#' @param sclibrary Input tibble or matrix containing a single cell profile in
+#'    each column. Rownames are expected to be gene identifiers.
+#' @param maxit The iteration limit used in the optimization algorithm, defaults
+#'    to ´2e4´. This is very dataset specific, so if the provided value is not
+#'    sufficient we advise to increase this value.
+#' @param ncores The number of cores for parallel computation.
 #'
 #' @return a list containing
 #' -tissuemodel: contains the computed cell weights for each bulk sample
@@ -37,8 +39,14 @@
 #' colnames(sc) <- cellnames
 #' fitted_tissue <- tissueResolver:::fit_tissue_noboot(bulks, sc, 2e4, 2)
 #'
-fit_tissue_noboot <- function(bulkdata, sclibrary, maxit = 2e4, ncores = 1) {
-  message(paste0("fitting ", ncol(bulkdata), " bulks..."))
+fit_tissue_noboot <- function(
+  bulkdata,
+  sclibrary,
+  maxit = 2e4,
+  ncores = 1
+) {
+
+  message(paste0("Fitting tissue model for ", ncol(bulkdata), " bulks:"))
   if (tibble::is_tibble(sclibrary)) {
     sclibrary <- df_to_matrix(sclibrary)
   }
@@ -75,7 +83,7 @@ fit_tissue_noboot <- function(bulkdata, sclibrary, maxit = 2e4, ncores = 1) {
   # vector y[,i]
   fn <- function(cell_weights, bulk_id) {
     r <- y[, bulk_id] - x %*% cell_weights
-    return(sum(r^2))
+    sum(r^2)
   }
 
   # grad_fn returns the gradient of fn wrt. to the cell_weights
@@ -83,7 +91,7 @@ fit_tissue_noboot <- function(bulkdata, sclibrary, maxit = 2e4, ncores = 1) {
   grad_fn <- function(cell_weights, bulk_id) {
     r <- y[, bulk_id] - x %*% cell_weights
     dr <- 2 * r
-    return(-t(dr) %*% x)
+    -t(dr) %*% x
   }
 
   # function for fitting a single bulk, will be called in parallel below
@@ -95,24 +103,27 @@ fit_tissue_noboot <- function(bulkdata, sclibrary, maxit = 2e4, ncores = 1) {
 
     # note the box constraint, demanding the cell weights to be non-negative
     # log for iteration info on residuals and convergence
-    out_log <- utils::capture.output(res <- stats::optim(
-      cell_weights,
-      fn,
-      grad_fn,
-      lower = rep(0, ncells),
-      method = "L-BFGS-B",
-      control = list(maxit = maxit, trace = 1),
-      bulk_id
-    ))
+    out_log <- utils::capture.output(
+      res <- stats::optim(
+        cell_weights,
+        fn,
+        grad_fn,
+        lower = rep(0, ncells),
+        method = "L-BFGS-B",
+        control = list(maxit = maxit, trace = 1),
+        bulk_id
+      )
+    )
 
     # message status concerning convergence of optimizer
     convergence <- res$convergence
 
-    if (convergence == 1) {
-      message(paste0("iteration limit of ", maxit, " has been reached"))
-    } else if (convergence == 51) {
-      message(res$message)
-    } else if (convergence == 52) {
+    # convergence codes:
+    # 0: successful completion
+    # 1: maximum number of iterations reached
+    # 51: warning from "L-BFGS-B" method
+    # 52: error from "L-BFGS-B" method
+    if (convergence == 52) {
       stop(res$message)
     }
 
@@ -130,16 +141,18 @@ fit_tissue_noboot <- function(bulkdata, sclibrary, maxit = 2e4, ncores = 1) {
     # for each bulk store residuals for all iterations
     log_store <- tibble::tibble(
       bulk_id = bulk_id,
-      log = list(out_log)
+      log = list(out_log),
+      convergence = convergence
     )
 
     message(paste0("Fitting bulk ", bulk_id, " done."))
 
-    return(list(
+    list(
       result = result,
       log_store = log_store
-    ))
+    )
   }
+
   # parallel execution of fitting bulks on ncores
   # bind all results together, note that mclapply keeps order of bulks
   all_fits <- parallel::mclapply(
@@ -164,7 +177,7 @@ fit_tissue_noboot <- function(bulkdata, sclibrary, maxit = 2e4, ncores = 1) {
   result <- tibble::tibble()
   log_store <- tibble::tibble()
 
-  for (i in 1:ncol(y)) {
+  for (i in seq_len(ncol(y))) {
     result <- rbind(
       result,
       all_fits[[i]]$result
@@ -182,41 +195,49 @@ fit_tissue_noboot <- function(bulkdata, sclibrary, maxit = 2e4, ncores = 1) {
     log_store = log_store,
     bootstrap = FALSE
   ))
+
 }
 
 
-#' Fits a given single cell library to a collection of bulk samples by
-#' weighting the single cell gene expressions
-#' (the columns of the library matrix) in order to
-#' optimally match the bulk gene expressions.
-#' Allows for bootstrapping specified percentage of cells.
-#' The bulks are fit in parallel on multiple cores
+#' Fit a virtual tissue model from bulk samples using a single cell library
 #'
-#' @param bulkdata matrix containing the gene expression of
-#' a bulk sample in each column. Rownames are expected to be gene identifieres
-#' @param sclibrary tibble or matrix containing a single cell profile in
-#' each column. Rownames are expected to be gene identifieres
-#' @param maxit the iteration limit used in the optimization algorithm, defaults to 2e4
-#' @param bootstrap if set to FALSE fit tissue without bootstrapping.
-#' If set to true select bootstrap_pctcells perecent of cells
-#' and perform bootstrap_nruns of sampling cells and fitting these to bulks
-#' @param bootstrap_nruns number of bootstrap runs
-#' @param bootstrap_pctcells integer in \[0,100\] which prescribes the percentage of cells
-#' sampled from the single cell library in each bootstrap run
-#' @param ncores the number of cores for parallel computation
+#' @description
+#' Fits a given single cell library to a collection of bulk samples by weighting
+#' the single cell gene expressions (the columns of the library matrix) in order
+#' to optimally match the bulk gene expressions. Allows for bootstrapping with a
+#' specific percentage of cells and parallel fitting of bulks on multiple cores.
 #'
-#' @return if bootstrap is FALSE, returns a list with entries
-#' - tissuemodel: a data frame which holds all weights for each ' selected cell (id) and the bulk id that it was fitted to.
-#' - fitted_genes: a list of fitted gene names
-#' - bootstrap: FALSE
-#' If bootstrap is TRUE it returns a list containing
-#' - tissuemodels: a list of tissuemodels of every bootstrap run
-#' - fitted_genes: a list of fitted gene names
-#' - log_stores: a vector of log messages containing the residual per bulk and bootstrap run.
-#' - bootstrap: TRUE
-#' - bootstrap_nruns: number of bootstrap samples
-#' - bootstrap_pctcells: percentage of all single cells that were used in every bootstrap run
+#' @param bulkdata matrix containing the gene expression of a bulk sample in
+#'    each column. Rownames are expected to be gene identifiers.
+#' @param sclibrary tibble or matrix containing a single cell profile in each
+#'    column. Rownames are expected to be gene identifiers.
+#' @param maxit the iteration limit used in the optimization algorithm, defaults
+#'    to ´2e4´.
+#' @param bootstrap if set to FALSE fit tissue without bootstrapping. If set to
+#'    ´TRUE´ select ´bootstrap_pctcells´ percent of cells and perform
+#'    ´bootstrap_nruns´ of sampling cells and fitting these to bulks.
+#' @param bootstrap_nruns number of bootstrap runs.
+#' @param bootstrap_pctcells integer in ´\[0,100\]´ which prescribes the
+#'    percentage of cells sampled from the single cell library in each bootstrap
+#'    run.
+#' @param ncores the number of cores for parallel computation.
 #'
+#' @return
+#' If ´bootstrap = FALSE´, return a list containing:
+#' - ´tissuemodel´: a data frame which holds all weights for each selected cell
+#'    (id) and the bulk id that it was fitted to.
+#' - ´fitted_genes´: a list of fitted gene names
+#' - ´bootstrap´: ´FALSE´
+#'
+#' If ´bootstrap = TRUE´, return a list containing:
+#' - ´tissuemodels´: a list of tissuemodels of every bootstrap run
+#' - ´fitted_genes´: a list of fitted gene names
+#' - ´log_stores´: a vector of log messages containing the residual per bulk
+#'      and bootstrap run.
+#' - ´bootstrap´: ´TRUE´
+#' - ´bootstrap_nruns´: number of bootstrap samples
+#' - ´bootstrap_pctcells´: percentage of all single cells that were used in
+#'      every bootstrap run
 #'
 #' @examples
 #' set.seed(42)
@@ -244,20 +265,28 @@ fit_tissue_noboot <- function(bulkdata, sclibrary, maxit = 2e4, ncores = 1) {
 #'    bootstrap_pctcells = 50,
 #'    ncores = 2
 #'  )
+#'
 #' @export
 #'
-fit_tissue <- function(bulkdata,
-                           sclibrary,
-                           maxit = 2e4,
-                           bootstrap = FALSE,
-                           bootstrap_nruns = 50,
-                           bootstrap_pctcells = 10,
-                           ncores = 1) {
+fit_tissue <- function(
+  bulkdata,
+  sclibrary,
+  maxit = 2e4,
+  bootstrap = FALSE,
+  bootstrap_nruns = 50,
+  bootstrap_pctcells = 10,
+  ncores = 1
+) {
 
   if (!is.numeric(maxit)) {
-      stop("maxit is not a number!")
-    }
+    stop("maxit is not a number!")
+  }
 
+  # initialize counters for warnings and maxit reached
+  n_maxit <- 0
+  n_warn <- 0
+
+  # for bootstrapping
   if (bootstrap == TRUE) {
     # some input checking
     if (!is.numeric(bootstrap_nruns)) {
@@ -285,17 +314,13 @@ fit_tissue <- function(bulkdata,
       fitted_genes = c()
     )
 
-    message(
-      paste0("Fitting tissue models for ", bootstrap_nruns, " bootstrap runs: ")
-      )
+    message(paste0(
+      "Fitting tissue models for ", ncol(bulkdata),
+      " bulks over ", bootstrap_nruns, " bootstrap runs: "
+    ))
 
     # set up progress bar
-    pb <- utils::txtProgressBar(
-      min = 0,
-      max = bootstrap_nruns,
-      initial = 0,
-      style = 3
-    )
+    pb <- tissueResolver:::progress_bar(bootstrap_nruns)
 
     for (irun in 1:bootstrap_nruns) {
       # sample ncells from the sc library (sample is different in each run)
@@ -305,13 +330,23 @@ fit_tissue <- function(bulkdata,
       # using tryCatch to capture errors
       this_model <- tryCatch(
         suppressMessages(
-            fit_tissue_noboot(bulkdata, sclibrary[, take_cells], maxit, ncores)
-          ),
+          fit_tissue_noboot(
+            bulkdata,
+            sclibrary[, take_cells],
+            maxit,
+            ncores
+          )
+        ),
         error = function(e) {
           message("")
-          stop(paste("Convergance failed in bootstrap run", irun, ":", e$message), call. = FALSE)
+          stop(
+            paste("Convergance failed in bootstrap run", irun, ":", e$message),
+            call. = FALSE
+          )
         }
       )
+      # update progress bar
+      pb()
 
       # for each run store fitted_genes and tissuemodels
       result$fitted_genes <- this_model$fitted_genes
@@ -320,17 +355,54 @@ fit_tissue <- function(bulkdata,
       result$bootstrap <- TRUE
       result$bootstrap_nruns <- bootstrap_nruns
       result$bootstrap_pctcells <- bootstrap_pctcells
-
-      # update progress bar
-      utils::setTxtProgressBar(pb, irun)
     }
-    message("\t")
-    return(result)
+
+    # count warnings in log_store
+    n_maxit_cur <- sum(this_model$log_store$convergence == 1)
+    n_warn_cur <- sum(this_model$log_store$convergence == 51)
+    n_maxit <- sum(n_maxit, n_maxit_cur)
+    n_warn <- sum(n_warn, n_warn_cur)
+
+    # move to new line in terminal
+    cat("\n")
 
   } else {
-    message("Fitting tissue models without bootstrapping:")
-    tm <- fit_tissue_noboot(bulkdata, sclibrary, maxit, ncores)
-    return(tm)
-  }
-}
+    # no bootstrapping
 
+    nruns <- ncol(bulkdata)
+    result <- fit_tissue_noboot(
+      bulkdata,
+      sclibrary,
+      maxit,
+      ncores
+    )
+
+    # count warnings in log_store
+    n_maxit_cur <- sum(result$log_store$convergence == 1)
+    n_warn_cur <- sum(result$log_store$convergence == 51)
+    n_maxit <- sum(n_maxit, n_maxit_cur)
+    n_warn <- sum(n_warn, n_warn_cur)
+
+  }
+
+  # check if iteration limit was reached in any bulk
+  if (n_maxit > 0) {
+    warning(
+      paste0(
+        "Iteration limit reached for ", n_maxit, "/", nruns,
+        " runs. Consider increasing maxit (current: ", maxit, ")."
+      )
+    )
+  }
+
+  # check if any warnings were produced in any bulk
+  if (n_warn > 0) {
+    warning(
+      paste0("Optimization returned warnings for ", n_warn, "/",
+        nruns, " runs. See log_store for details."
+      )
+    )
+  }
+
+  return(result)
+}

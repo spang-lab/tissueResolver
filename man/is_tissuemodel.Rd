@@ -2,18 +2,18 @@
 % Please edit documentation in R/util.R
 \name{is_tissuemodel}
 \alias{is_tissuemodel}
-\title{checks tissuemodel to have the desired format}
+\title{Check if an object is a tissuemodel}
 \usage{
 is_tissuemodel(tissuemodel)
 }
 \arguments{
-\item{tissuemodel}{object returned by fit_tissue_noboot to be checked}
+\item{tissuemodel}{object returned by \code{fit_tissue_noboot()} to be checked}
 }
 \value{
-TRUE if it is a tissuemodel, FALSE otherwise
+\code{TRUE} if it is a tissuemodel and \code{FALSE} if not.
 }
 \description{
-checks if the object is a tissuemodel as returned by fit_tissue_noboot
+Checks if the object is a tissuemodel as returned by \code{fit_tissue()}.
 }
 \examples{
 set.seed(42)
@@ -34,6 +34,5 @@ colnames(sc) <- cellnames
 fitted_tissue <- fit_tissue(bulks, sc)
 
 tissueResolver:::is_tissuemodel(fitted_tissue)
-
 
 }
