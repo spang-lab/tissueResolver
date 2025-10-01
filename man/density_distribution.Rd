@@ -2,7 +2,7 @@
 % Please edit documentation in R/weight_visualization.R
 \name{density_distribution}
 \alias{density_distribution}
-\title{density distributions of tissue models, allowing individual groups}
+\title{Get density distributions of tissuemodels}
 \usage{
 density_distribution(
   scembedding,
@@ -18,39 +18,48 @@ density_distribution(
 )
 }
 \arguments{
-\item{scembedding}{A dataframe that holds 2D embeddings of the single cell data used to compute the tissue model}
+\item{scembedding}{A dataframe that holds the 2D embeddings of the single
+cell data used to compute the tissue model.}
 
-\item{x}{name of the x coordinate of the 2D embedding.}
+\item{x}{The name of the x coordinate of the 2D embedding. Defaults to
+\code{"UMAP1"}.}
 
-\item{y}{name of the y coordinate of the 2D embedding}
+\item{y}{The name of the y coordinate of the 2D embedding. Defaults to
+\code{"UMAP2"}.}
 
-\item{scids}{name of the column holding the cell identifiers in the embedding data frame.}
+\item{scids}{The name of the column holding the cell identifiers in the
+embedding data frame. Defaults to \code{"cell_id"}.}
 
-\item{tissuemodel}{tissue model, output from fit_tissue}
+\item{tissuemodel}{A tissuemodel derived from \code{fit_tissue()}.}
 
-\item{model_cellids}{name of the cell_id column in the model data frame}
+\item{model_cellids}{The name of the cell_id column in the model data frame.
+Defaults to \code{"cell_id"}.}
 
-\item{model_bulkids}{name of the bulk id column in the model data frame}
+\item{model_bulkids}{The name of the bulk id column in the model data frame.
+Defaults to \code{"bulk_id"}.}
 
-\item{bulkgroups}{an optional mapping of bulks to condition groups (e.g. treated/untreated, etc)}
+\item{bulkgroups}{An optional mapping for the bulks to additional groups
+(e.g. treated/untreated, etc).}
 
-\item{bulk_groupids}{names of the column that holds the group id within bulkgroups if that is a dataframe}
+\item{bulk_groupids}{The names of the column that holds the group id within
+bulkgroups if that is a dataframe. Defaults to \code{"group"}.}
 
-\item{verbose}{print more output}
+\item{verbose}{Prints more output if \code{TRUE} (default).}
 }
 \value{
-dataframe with a kde density z-value for every x, y coordinate and an additional group column
+A dataframe with a kde density z-value for every x and y coordinate
+and an additional group column.
 }
 \description{
-computes weighted 2D-densities for cell populations fitted using fit_tissue.
-If groups are given, such densities are computed for every group separately.
+Computes the weighted 2D densities for cell populations in a tissuemodel
+derived from \code{fit_tissue()}. If groups are given, the group-specific
+densities are computed.
 }
 \examples{
 library(tibble)
 set.seed(42)
 scembedding <- data.frame(
   "colnames" = paste0("cell_", 1:9),
-  # "colnames" = c(paste0("cell_", 1:3), paste0("cell_", 1:3), paste0("cell_", 1:3)),
   "UMAP1" = c(rep(x = 1, n = 3), rep(x = 2, n = 3), rep(x = 3, n = 3)),
   "UMAP2" = c(rep(x = 1:3, each = 3)),
   "c.type" = sample(c("CTA", "CTB", "CTC"), 9, replace = TRUE)
@@ -60,8 +69,9 @@ fitted_tissue <- tibble(
   "fitted_genes" = NA,
   "tissuemodel" = tibble(
     "bulk_id" = c("b1", "b1", "b1", "b2", "b2", "b2", "b3", "b3", "b3"),
-    # "cell_id" = paste0("cell_", 1:9),
-    "cell_id" = c(paste0("cell_", 1:3), paste0("cell_", 4:6), paste0("cell_", 1:3)),
+    "cell_id" = c(
+      paste0("cell_", 1:3), paste0("cell_", 4:6), paste0("cell_", 1:3)
+    ),
     "weight" = c(1, 0.5, 0.25, 0.25, 0.5, 1, 0.3, 0.3, 0.3)
   )
 )

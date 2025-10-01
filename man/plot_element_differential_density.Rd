@@ -2,7 +2,7 @@
 % Please edit documentation in R/weight_visualization.R
 \name{plot_element_differential_density}
 \alias{plot_element_differential_density}
-\title{plots the differential density between two groups as a tile plot}
+\title{Plot the differential density between two groups as a tile plot}
 \usage{
 plot_element_differential_density(
   densities,
@@ -15,27 +15,33 @@ plot_element_differential_density(
 )
 }
 \arguments{
-\item{densities}{dataframe that is returned by density_distribution (see the help of that function)}
+\item{densities}{A dataframe returned by \code{density_distribution()}.}
 
-\item{groupA}{name of the group with the positive weights (appearing red in the plot where this group has a larger weight than groupB).}
+\item{groupA}{The name of the group with positive weights. These are colored
+red, if weights are larger than in \code{groupB}.}
 
-\item{groupB}{name of the group with the negative relative weights (appearing blue in the plot where this group has a larger weight than groupA).}
+\item{groupB}{The name of the group with negative weights. These are colored
+blue, if weights are larger than in \code{groupA}.}
 
-\item{x}{column name of the x coordinate of the kde grid}
+\item{x}{The column name of the x coordinate of the kde grid.}
 
-\item{y}{column name of the y coordinate of the kde grid}
+\item{y}{The column name of the y coordinate of the kde grid.}
 
-\item{z}{column name of the z coordinate for the kde grid}
+\item{z}{The column name of the z coordinate for the kde grid.}
 
-\item{group}{column name of the densities dataframe storing the bulkgroups}
+\item{group}{The column name of the densities dataframe storing the
+bulkgroups.}
 }
 \value{
-a ggplot plot object that can further be customized, viewed or saved in a file. see ggplot2.
+A ggplot plot object that can be further customized, viewed or saved
+in a file. For more details see \code{ggplot2}.
 }
 \description{
-having the kde density at each grid point of the single cell embedding for each bulkgroup provided by density_distribution, we
-can assess the difference in densities between two of these groups. This differential densitiy is then visualized in the kde grid space as tile plot.
-If group labels are omitted, they are tried to be guessed (if only two groups exist).
+The kde density at each grid point of the single cell embedding for each
+bulkgroup provided by \code{density_distribution()} is used to assess the
+difference in densities between two groups. This differential density is
+then visualized in the kde grid space as tile plot. If group labels are
+omitted, they are guessed (if only two groups exist).
 }
 \examples{
 library(tibble)
@@ -43,7 +49,6 @@ library(ggplot2)
 set.seed(42)
 scembedding <- data.frame(
   "colnames" = paste0("cell_", 1:9),
-  # "colnames" = c(paste0("cell_", 1:3), paste0("cell_", 1:3), paste0("cell_", 1:3)),
   "UMAP1" = c(rep(x = 1, n = 3), rep(x = 2, n = 3), rep(x = 3, n = 3)),
   "UMAP2" = c(rep(x = 1:3, each = 3)),
   "c.type" = sample(c("CTA", "CTB", "CTC"), 9, replace = TRUE)
@@ -52,8 +57,9 @@ fitted_tissue <- tibble(
   "fitted_genes" = NA,
   "tissuemodel" = tibble(
     "bulk_id" = c("b1", "b1", "b1", "b2", "b2", "b2", "b3", "b3", "b3"),
-    # "cell_id" = paste0("cell_", 1:9),
-    "cell_id" = c(paste0("cell_", 1:3), paste0("cell_", 4:6), paste0("cell_", 1:3)),
+    "cell_id" = c(
+      paste0("cell_", 1:3), paste0("cell_", 4:6), paste0("cell_", 1:3)
+    ),
     "weight" = c(1, 0.5, 0.25, 0.25, 0.5, 1, 0.3, 0.3, 0.3)
   )
 )
@@ -65,17 +71,19 @@ density <- density_distribution(
   bulkgroups = bulkgroups
 )
 
-element_differential_density <- tissueResolver:::plot_element_differential_density(
-  density,
-  groupA = "bgroup_1",
-  groupB = "bgroup_2",
-  x = "x",
-  y = "y",
-  z = "z",
-  group = "group"
+element_differential_density <-
+  tissueResolver:::plot_element_differential_density(
+    density,
+    groupA = "bgroup_1",
+    groupB = "bgroup_2",
+    x = "x",
+    y = "y",
+    z = "z",
+    group = "group"
 )
 
 print(ggplot() +
   element_differential_density +
   coord_fixed())
+
 }

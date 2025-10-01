@@ -2,42 +2,50 @@
 % Please edit documentation in R/weight_visualization.R
 \name{plot_differential_densities}
 \alias{plot_differential_densities}
-\title{plots differential group densities between two groups A and B.}
+\title{Plot differential densities between two groups}
 \usage{
 plot_differential_densities(
   densitydata,
   scembedding = NULL,
   groupA = NA,
   groupB = NA,
-  embedding.x = "UMAP1",
-  embedding.y = "UMAP2",
+  embedding_x = "UMAP1",
+  embedding_y = "UMAP2",
   colourby = NULL
 )
 }
 \arguments{
-\item{densitydata}{dataframe that is returned by density_distribution (see the help of that function)}
+\item{densitydata}{A dataframe returned by \code{density_distribution()}.}
 
-\item{scembedding}{embedding of the cells that the tissue model was computed on (dataframe or matrix-like). Optional. If NULL, no embedding will be plotted but just the densities.}
+\item{scembedding}{A dataframe or matrix that holds 2D embeddings of the
+single cell data used to compute the tissuemodel. Defaults to \code{NULL}. If
+\code{scembedding} is provided the single cell embedding is plotted.}
 
-\item{groupA}{name of the group with the positive weights (appearing red in the plot where this group has a larger weight than groupB).}
+\item{groupA}{The name of the group with positive weights. These are colored
+red, if weights are larger than in \code{groupB}.}
 
-\item{groupB}{name of the group with the negative relative weights (appearing blue in the plot where this group has a larger weight than groupA).}
+\item{groupB}{The name of the group with negative weights. These are colored
+blue, if weights are larger than in \code{groupA}.}
 
-\item{embedding.x}{column name of the x coordinate for the 2D embedding in scembedding}
+\item{embedding_x}{The column name of the x coordinate for the 2D embedding
+in \code{scembedding}. Defaults to \code{"UMAP1"}.}
 
-\item{embedding.y}{column name of the y coordinate for the 2D embedding in scembedding}
+\item{embedding_y}{The column name of the y coordinate for the 2D embedding
+in \code{scembedding}. Defaults to \code{"UMAP2"}.}
 
-\item{colourby}{if non-null, colour the single cells by this column of scembedding (e.g., celltype)}
+\item{colourby}{defaults to \code{NULL}. If column name is provided, colour the
+single cells by this column of \code{scembedding} (e.g., celltype).}
 }
 \value{
-a ggplot plot object that can further be customized, viewed or saved in a file. see ggplot2.
+A ggplot plot object that can be further customized, viewed or saved
+in a file. For more details see \code{ggplot2}.
 }
 \description{
-visualizes groups for which a tissue was fitted and their differences.
-The difference in density between groupA and groupB is computed and plotted.
-If group labels are omitted, they are tried to be guessed (if only two groups exist).
-Besides the differential densities the plot contains the visualization of the single cell embedding
-and a contour plot illustrating the density of each bulk group
+Visualizes groups for which a tissue was fitted and their differences. The
+difference in density between groupA and groupB is computed and plotted. If
+group labels are omitted, they are guessed (if only two groups exist).
+In addition, the single cell embedding and a contour plot of the density for
+each bulk group are plotted.
 }
 \examples{
 library(tibble)
@@ -45,7 +53,6 @@ library(ggplot2)
 set.seed(42)
 scembedding <- data.frame(
   "colnames" = paste0("cell_", 1:9),
-  # "colnames" = c(paste0("cell_", 1:3), paste0("cell_", 1:3), paste0("cell_", 1:3)),
   "UMAP1" = c(rep(x = 1, n = 3), rep(x = 2, n = 3), rep(x = 3, n = 3)),
   "UMAP2" = c(rep(x = 1:3, each = 3)),
   "c.type" = sample(c("CTA", "CTB", "CTC"), 9, replace = TRUE)
@@ -54,8 +61,9 @@ fitted_tissue <- tibble(
   "fitted_genes" = NA,
   "tissuemodel" = tibble(
     "bulk_id" = c("b1", "b1", "b1", "b2", "b2", "b2", "b3", "b3", "b3"),
-    # "cell_id" = paste0("cell_", 1:9),
-    "cell_id" = c(paste0("cell_", 1:3), paste0("cell_", 4:6), paste0("cell_", 1:3)),
+    "cell_id" = c(
+      paste0("cell_", 1:3), paste0("cell_", 4:6), paste0("cell_", 1:3)
+    ),
     "weight" = c(1, 0.5, 0.25, 0.25, 0.5, 1, 0.3, 0.3, 0.3)
   )
 )
@@ -72,10 +80,11 @@ differential_densities <- plot_differential_densities(
   scembedding,
   groupA = "bgroup_1",
   groupB = "bgroup_2",
-  embedding.x = "UMAP1",
-  embedding.y = "UMAP2",
+  embedding_x = "UMAP1",
+  embedding_y = "UMAP2",
   colourby = "c.type"
 )
 
 print(differential_densities)
+
 }

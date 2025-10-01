@@ -2,24 +2,30 @@
 % Please edit documentation in R/weight_visualization.R
 \name{plot_element_embedding}
 \alias{plot_element_embedding}
-\title{plots the single cell embedding}
+\title{Plots the single cell embedding}
 \usage{
 plot_element_embedding(scembedding, x = "UMAP1", y = "UMAP2", colourby = NULL)
 }
 \arguments{
-\item{scembedding}{A dataframe that holds 2D embeddings of the single cell data used to compute the tissue model}
+\item{scembedding}{A dataframe that holds 2D embeddings of the single cell
+data used to compute the tissuemodel.}
 
-\item{x}{column name of the x coordinate for the 2D embedding in scembedding}
+\item{x}{The column name of the x coordinate for the 2D embedding in
+\code{scembedding}.}
 
-\item{y}{column name of the y coordinate for the 2D embedding in scembedding}
+\item{y}{The column name of the y coordinate for the 2D embedding in
+\code{scembedding}.}
 
-\item{colourby}{if non-null, colour the single cells by this column of scembedding (e.g., celltype)}
+\item{colourby}{If not \code{NULL}, colour the single cells by this column of
+\code{scembedding} (e.g. celltype).}
 }
 \value{
-a ggplot plot object that can further be customized, viewed or saved in a file. see ggplot2.
+A ggplot plot object that can further be customized, viewed or saved
+in a file. For more details see \code{ggplot2}.
 }
 \description{
-plots each UMAP point from the single cell embedding, optionally coloured by e.g., the associated cell type
+Plots each UMAP point from the single cell embedding. These may be coloured
+(e.g. by the associated cell type).
 }
 \examples{
 library(ggplot2)
@@ -40,7 +46,5 @@ embedding_plot <- tissueResolver:::plot_element_embedding(
 print(ggplot() +
   embedding_plot +
   coord_fixed())
-
-
 
 }

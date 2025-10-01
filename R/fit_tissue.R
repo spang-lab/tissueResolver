@@ -320,7 +320,7 @@ fit_tissue <- function(
     ))
 
     # set up progress bar
-    pb <- tissueResolver:::progress_bar(bootstrap_nruns)
+    pb <- progress_bar(bootstrap_nruns)
 
     for (irun in 1:bootstrap_nruns) {
       # sample ncells from the sc library (sample is different in each run)

@@ -91,7 +91,7 @@ fast_specific_expression_regulation <- function(
   if (show_pb) {
     n_types <- length(unique(mapping[[by]]))
     n_bulks <- length(unique(tissuemodel$tissuemodel[[bulk_id]]))
-    pb <- tissueResolver:::progress_bar(n_types * n_bulks)
+    pb <- progress_bar(n_types * n_bulks)
   }
 
   # join the cell type column of mapping to tissuemodel
@@ -279,7 +279,7 @@ specific_expression_regulation <- function(
     message(paste0("Computing CSRE for ", n_boot, " bootstrap runs: "))
 
     # set up progress bar
-    pb <- tissueResolver:::progress_bar(n_boot)
+    pb <- progress_bar(n_boot)
 
     for (run_i in 1:n_boot) {
       this_model <- list(

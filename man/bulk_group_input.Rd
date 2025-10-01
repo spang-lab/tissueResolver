@@ -2,22 +2,25 @@
 % Please edit documentation in R/weight_visualization.R
 \name{bulk_group_input}
 \alias{bulk_group_input}
-\title{input wrapper for accepting both named vectors as well as dataframes containing bulk groups}
+\title{Format bulk groups input}
 \usage{
 bulk_group_input(bulkgroups, bulkidcol = "bulk_id", groupcol = "group")
 }
 \arguments{
-\item{bulkgroups}{vector or dataframe holding the bulk-group association}
+\item{bulkgroups}{A vector or dataframe holding the bulk-group association.}
 
-\item{bulkidcol}{if bulkgroups is a tibble, the name of the column that holds the bulk ids.}
+\item{bulkidcol}{If bulkgroups is a tibble, the name of the column that holds
+the bulk ids.}
 
-\item{groupcol}{if bulkgroups is a tibble, the name of the column that holds the group ids.}
+\item{groupcol}{If bulkgroups is a tibble, the name of the column that holds
+the group ids.}
 }
 \value{
-named vector of group ids. Names are the bulk ids, values are group ids.
+A named vector of group ids with corresponding bulk ids as names.
 }
 \description{
-input wrapper for accepting both named vectors as well as dataframes containing bulk groups
+An input wrapper for \code{density_distribution()} to accept both named vectors as
+well as dataframes containing bulk groups.
 }
 \examples{
 # Case 1
