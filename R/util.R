@@ -292,7 +292,6 @@ df_to_matrix <- function(
   return(r)
 }
 
-
 #' Convert a matrix to a tibble
 #'
 #' @description

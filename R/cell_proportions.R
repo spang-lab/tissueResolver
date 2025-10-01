@@ -1,5 +1,5 @@
 #' Compute cell type proportions from a single tissue model
-#' #############################################################################
+#'
 #' @description
 #' Returns the sum over weights of certain cell populations (grouped by
 #' mapping for each bulk) for a single tissue model retrieved by `fit_tissue()`

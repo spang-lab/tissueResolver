@@ -198,7 +198,6 @@ fit_tissue_noboot <- function(
 
 }
 
-
 #' Fit a virtual tissue model from bulk samples using a single cell library
 #'
 #' @description

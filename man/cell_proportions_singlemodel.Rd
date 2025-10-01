@@ -2,8 +2,7 @@
 % Please edit documentation in R/cell_proportions.R
 \name{cell_proportions_singlemodel}
 \alias{cell_proportions_singlemodel}
-\title{Compute cell type proportions from a single tissue model
-#############################################################################}
+\title{Compute cell type proportions from a single tissue model}
 \usage{
 cell_proportions_singlemodel(
   tissuemodel,

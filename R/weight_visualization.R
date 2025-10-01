@@ -120,7 +120,6 @@ kde2d_weighted <- function(
   return(ret)
 }
 
-
 #' Format bulk groups input
 #'
 #' @description
@@ -605,7 +604,6 @@ plot_element_differential_density <- function(
   )
 
 }
-
 
 #' Plot differential densities between two groups
 #'
