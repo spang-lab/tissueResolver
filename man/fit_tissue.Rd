@@ -22,38 +22,38 @@ each column. Rownames are expected to be gene identifiers.}
 column. Rownames are expected to be gene identifiers.}
 
 \item{maxit}{the iteration limit used in the optimization algorithm, defaults
-to ´2e4´.}
+to \code{2e4}.}
 
 \item{bootstrap}{if set to FALSE fit tissue without bootstrapping. If set to
-´TRUE´ select ´bootstrap_pctcells´ percent of cells and perform
-´bootstrap_nruns´ of sampling cells and fitting these to bulks.}
+\code{TRUE} select \code{bootstrap_pctcells} percent of cells and perform
+\code{bootstrap_nruns} of sampling cells and fitting these to bulks.}
 
 \item{bootstrap_nruns}{number of bootstrap runs.}
 
-\item{bootstrap_pctcells}{integer in ´[0,100]´ which prescribes the
+\item{bootstrap_pctcells}{integer in \verb{\[0,100\]} which prescribes the
 percentage of cells sampled from the single cell library in each bootstrap
 run.}
 
 \item{ncores}{the number of cores for parallel computation.}
 }
 \value{
-If ´bootstrap = FALSE´, return a list containing:
+If \code{bootstrap = FALSE}, return a list containing:
 \itemize{
-\item ´tissuemodel´: a data frame which holds all weights for each selected cell
+\item \code{tissuemodel}: a data frame which holds all weights for each selected cell
 (id) and the bulk id that it was fitted to.
-\item ´fitted_genes´: a list of fitted gene names
-\item ´bootstrap´: ´FALSE´
+\item \code{fitted_genes}: a list of fitted gene names
+\item \code{bootstrap}: \code{FALSE}
 }
 
-If ´bootstrap = TRUE´, return a list containing:
+If \code{bootstrap = TRUE}, return a list containing:
 \itemize{
-\item ´tissuemodels´: a list of tissuemodels of every bootstrap run
-\item ´fitted_genes´: a list of fitted gene names
-\item ´log_stores´: a vector of log messages containing the residual per bulk
+\item \code{tissuemodels}: a list of tissuemodels of every bootstrap run
+\item \code{fitted_genes}: a list of fitted gene names
+\item \code{log_stores}: a vector of log messages containing the residual per bulk
 and bootstrap run.
-\item ´bootstrap´: ´TRUE´
-\item ´bootstrap_nruns´: number of bootstrap samples
-\item ´bootstrap_pctcells´: percentage of all single cells that were used in
+\item \code{bootstrap}: \code{TRUE}
+\item \code{bootstrap_nruns}: number of bootstrap samples
+\item \code{bootstrap_pctcells}: percentage of all single cells that were used in
 every bootstrap run
 }
 }

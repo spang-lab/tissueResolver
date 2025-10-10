@@ -14,7 +14,7 @@ in each column. Rownames are expected to be gene identifiers.}
 each column. Rownames are expected to be gene identifiers.}
 
 \item{maxit}{The iteration limit used in the optimization algorithm, defaults
-to ´2e4´. This is very dataset specific, so if the provided value is not
+to \code{2e4}. This is very dataset specific, so if the provided value is not
 sufficient we advise to increase this value.}
 
 \item{ncores}{The number of cores for parallel computation.}

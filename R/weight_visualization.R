@@ -11,7 +11,7 @@
 #'    to `25`.
 #' @param lims The numeric vector with a length of 4 `c(lower(x), upper(x),
 #'    lower(y), upper(y))`, range of the plot, allowing to plot a subframe of
-#'    the data. Defaults to 'c(range(x), range(y))'.
+#'    the data. Defaults to `c(range(x), range(y))`.
 #' @param bandwidth The bandwidth for the KDE, inducing the smoothing for the
 #'    density estimate. A numeric vector with length of 2. Defaults to
 #'    `c(MASS::bandwidth.nrd(x), MASS::bandwidth.nrd(y))/4`.

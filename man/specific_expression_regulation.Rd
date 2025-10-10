@@ -16,27 +16,27 @@ specific_expression_regulation(
 )
 }
 \arguments{
-\item{tissuemodel}{A tissuemodel (tibble) as returned by ´fit_tissue()´}
+\item{tissuemodel}{A tissuemodel (tibble) as returned by \code{fit_tissue()}}
 
 \item{sclibrary}{A single cell data matrix, columns are individual cells and
-must be indexable by ´cell_id´ contained in the ´tissuemodel´.}
+must be indexable by \code{cell_id} contained in the \code{tissuemodel}.}
 
 \item{mapping}{A dataframe that maps each cell (column name given by
-´cell_id´) to a category (column name given by ´by´).}
+\code{cell_id}) to a category (column name given by \code{by}).}
 
 \item{by}{The name of the categorical variable defining the groups of cells.
-Defaults to ´"celltype"´.}
+Defaults to \code{"celltype"}.}
 
 \item{weight}{The name of the column that holds the fitted cell weights.
-Defaults to ´"weight"´.}
+Defaults to \code{"weight"}.}
 
 \item{bulk_id}{The name of the column that identifies the bulks. Defaults to
-´"bulk_id"´.}
+\code{"bulk_id"}.}
 
 \item{cell_id}{The name of the column that contains the IDs for the cells
-matching the column names of ´sclibrary´. Defaults to ´"cell_id"´.}
+matching the column names of \code{sclibrary}. Defaults to \code{"cell_id"}.}
 
-\item{compute_total}{If set to ´TRUE´, also compute the total expression
+\item{compute_total}{If set to \code{TRUE}, also compute the total expression
 explained by ALL cell types. Can be used to compare resulting virtual
 tissue to the bulk.}
 }

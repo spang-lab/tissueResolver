@@ -28,7 +28,7 @@ density estimate. A numeric vector with length of 2. Defaults to
 to \code{25}.}
 
 \item{lims}{The numeric vector with a length of 4 \code{c(lower(x), upper(x), lower(y), upper(y))}, range of the plot, allowing to plot a subframe of
-the data. Defaults to 'c(range(x), range(y))'.}
+the data. Defaults to \code{c(range(x), range(y))}.}
 }
 \value{
 A dataframe with 3 entries: \code{x} and \code{y} grid coordinates in long

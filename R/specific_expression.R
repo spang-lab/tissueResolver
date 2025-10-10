@@ -6,22 +6,22 @@
 #' expression column is such that the total expression of a gene is
 #' approximately that of the bulk, while the regulation column corresponds to
 #' the average expression of a single cell of that type. This function provides
-#' the main computations accessed by ´specific_expression_regulation()´
+#' the main computations accessed by `specific_expression_regulation()`
 #'
-#' @param tissuemodel A tissuemodel (tibble) as returned by ´fit_tissue()´
+#' @param tissuemodel A tissuemodel (tibble) as returned by `fit_tissue()`
 #' @param sclibrary A single cell data matrix, columns are individual cells and
-#'    must be indexable by ´cell_id´ contained in the ´tissuemodel´.
+#'    must be indexable by `cell_id` contained in the `tissuemodel`.
 #' @param mapping A dataframe that maps each cell (column name given by
-#'    ´cell_id´) to a category (column name given by ´by´).
+#'    `cell_id`) to a category (column name given by `by`).
 #' @param by The name of the categorical variable defining the groups of cells.
-#'    Defaults to ´"celltype"´.
+#'    Defaults to `"celltype"`.
 #' @param weight The name of the column that holds the fitted cell weights.
-#'    Defaults to ´"weight"´.
+#'    Defaults to `"weight"`.
 #' @param bulk_id The name of the column that identifies the bulks. Defaults to
-#'    ´"bulk_id"´.
+#'    `"bulk_id"`.
 #' @param cell_id The name of the column that contains the IDs for the cells
-#'    matching the column names of ´sclibrary´. Defaults to ´"cell_id"´.
-#' @param compute_total If set to ´TRUE´, also compute the total expression
+#'    matching the column names of `sclibrary`. Defaults to `"cell_id"`.
+#' @param compute_total If set to `TRUE`, also compute the total expression
 #'    explained by ALL cell types. Can be used to compare resulting virtual
 #'    tissue to the bulk.
 #' @param show_pb If `FALSE`, the function will not display a progress bar.
@@ -193,20 +193,20 @@ fast_specific_expression_regulation <- function(
 #' the bulk, while the regulation column corresponds to the average expression
 #' of a single cell of that type.
 #'
-#' @param tissuemodel A tissuemodel (tibble) as returned by ´fit_tissue()´
+#' @param tissuemodel A tissuemodel (tibble) as returned by `fit_tissue()`
 #' @param sclibrary A single cell data matrix, columns are individual cells and
-#'    must be indexable by ´cell_id´ contained in the ´tissuemodel´.
+#'    must be indexable by `cell_id` contained in the `tissuemodel`.
 #' @param mapping A dataframe that maps each cell (column name given by
-#'    ´cell_id´) to a category (column name given by ´by´).
+#'    `cell_id`) to a category (column name given by `by`).
 #' @param by The name of the categorical variable defining the groups of cells.
-#'    Defaults to ´"celltype"´.
+#'    Defaults to `"celltype"`.
 #' @param weight The name of the column that holds the fitted cell weights.
-#'    Defaults to ´"weight"´.
+#'    Defaults to `"weight"`.
 #' @param bulk_id The name of the column that identifies the bulks. Defaults to
-#'    ´"bulk_id"´.
+#'    `"bulk_id"`.
 #' @param cell_id The name of the column that contains the IDs for the cells
-#'    matching the column names of ´sclibrary´. Defaults to ´"cell_id"´.
-#' @param compute_total If set to ´TRUE´, also compute the total expression
+#'    matching the column names of `sclibrary`. Defaults to `"cell_id"`.
+#' @param compute_total If set to `TRUE`, also compute the total expression
 #'    explained by ALL cell types. Can be used to compare resulting virtual
 #'    tissue to the bulk.
 #'
@@ -378,17 +378,17 @@ specific_expression_regulation <- function(
 #' determine the explained specific expression of each gene in each bulk sample
 #' without grouping cells.
 #'
-#' @param tissuemodel A tissuemodel (tibble) as returned by ´fit_tissue()´
+#' @param tissuemodel A tissuemodel (tibble) as returned by `fit_tissue()`
 #' @param sclibrary A single cell data matrix, columns are individual cells and
-#'    must be indexable by ´cell_id´ contained in the ´tissuemodel´.
+#'    must be indexable by `cell_id` contained in the `tissuemodel`.
 #' @param by The name of the categorical variable defining the groups of cells.
-#'    Defaults to ´"celltype"´.
+#'    Defaults to `"celltype"`.
 #' @param weight The name of the column that holds the fitted cell weights.
-#'    Defaults to ´"weight"´.
+#'    Defaults to `"weight"`.
 #' @param bulk_id The name of the column that identifies the bulks. Defaults to
-#'    ´"bulk_id"´.
+#'    `"bulk_id"`.
 #' @param cell_id The name of the column that contains the IDs for the cells
-#'    matching the column names of ´sclibrary´. Defaults to ´"cell_id"´.
+#'    matching the column names of `sclibrary`. Defaults to `"cell_id"`.
 #'
 #' @return A tibble holding the explained expression for each gene in each bulk.
 #'

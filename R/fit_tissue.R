@@ -11,7 +11,7 @@
 #' @param sclibrary Input tibble or matrix containing a single cell profile in
 #'    each column. Rownames are expected to be gene identifiers.
 #' @param maxit The iteration limit used in the optimization algorithm, defaults
-#'    to ´2e4´. This is very dataset specific, so if the provided value is not
+#'    to `2e4`. This is very dataset specific, so if the provided value is not
 #'    sufficient we advise to increase this value.
 #' @param ncores The number of cores for parallel computation.
 #'
@@ -211,31 +211,31 @@ fit_tissue_noboot <- function(
 #' @param sclibrary tibble or matrix containing a single cell profile in each
 #'    column. Rownames are expected to be gene identifiers.
 #' @param maxit the iteration limit used in the optimization algorithm, defaults
-#'    to ´2e4´.
+#'    to `2e4`.
 #' @param bootstrap if set to FALSE fit tissue without bootstrapping. If set to
-#'    ´TRUE´ select ´bootstrap_pctcells´ percent of cells and perform
-#'    ´bootstrap_nruns´ of sampling cells and fitting these to bulks.
+#'    `TRUE` select `bootstrap_pctcells` percent of cells and perform
+#'    `bootstrap_nruns` of sampling cells and fitting these to bulks.
 #' @param bootstrap_nruns number of bootstrap runs.
-#' @param bootstrap_pctcells integer in ´\[0,100\]´ which prescribes the
+#' @param bootstrap_pctcells integer in `\[0,100\]` which prescribes the
 #'    percentage of cells sampled from the single cell library in each bootstrap
 #'    run.
 #' @param ncores the number of cores for parallel computation.
 #'
 #' @return
-#' If ´bootstrap = FALSE´, return a list containing:
-#' - ´tissuemodel´: a data frame which holds all weights for each selected cell
+#' If `bootstrap = FALSE`, return a list containing:
+#' - `tissuemodel`: a data frame which holds all weights for each selected cell
 #'    (id) and the bulk id that it was fitted to.
-#' - ´fitted_genes´: a list of fitted gene names
-#' - ´bootstrap´: ´FALSE´
+#' - `fitted_genes`: a list of fitted gene names
+#' - `bootstrap`: `FALSE`
 #'
-#' If ´bootstrap = TRUE´, return a list containing:
-#' - ´tissuemodels´: a list of tissuemodels of every bootstrap run
-#' - ´fitted_genes´: a list of fitted gene names
-#' - ´log_stores´: a vector of log messages containing the residual per bulk
+#' If `bootstrap = TRUE`, return a list containing:
+#' - `tissuemodels`: a list of tissuemodels of every bootstrap run
+#' - `fitted_genes`: a list of fitted gene names
+#' - `log_stores`: a vector of log messages containing the residual per bulk
 #'      and bootstrap run.
-#' - ´bootstrap´: ´TRUE´
-#' - ´bootstrap_nruns´: number of bootstrap samples
-#' - ´bootstrap_pctcells´: percentage of all single cells that were used in
+#' - `bootstrap`: `TRUE`
+#' - `bootstrap_nruns`: number of bootstrap samples
+#' - `bootstrap_pctcells`: percentage of all single cells that were used in
 #'      every bootstrap run
 #'
 #' @examples

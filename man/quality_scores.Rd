@@ -7,24 +7,26 @@
 quality_scores(csre, bulks)
 }
 \arguments{
-\item{csre}{The total explained expression obtained by fitting the
-´sclibrary´ to the bulk tissue as given by \code{explained_expression()}.}
+\item{csre}{The cell type specific expression (\code{csre}) obtained by
+\code{specific_expression_regulation()}. Note that \code{csre} must include the
+total explained gene expression to calculate the quality scores.}
 
-\item{bulks}{A dataframe containing the gene expression of one bulk sample in
-each column.}
+\item{bulks}{A matrix or dataframe containing the gene expression of bulk
+samples in each column and genes in each row. Row names must match the
+gene names in \code{csre}.}
 }
 \value{
 A list of dataframes:
 \itemize{
-\item ´genes´: Contains quality scores by gene + mean gene-wise actual and
+\item \code{genes}: Contains quality scores by gene + mean gene-wise actual and
 explained total expression
-\item ´bulks´: Contains quality scores to judge individual virtual tissues
+\item \code{bulks}: Contains quality scores to judge individual virtual tissues
 }
 }
 \description{
-Computes gene-specific and sample-specific quality scores: This function
-computes the mean relative residual and average bootstrap variance for each
-gene and each bulk sample.
+This function computes gene-specific and sample-specific quality scores.
+Specifically, it computes the mean relative residual and average bootstrap
+variance for each gene and each bulk sample.
 }
 \examples{
 library(tibble)

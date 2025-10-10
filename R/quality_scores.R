@@ -1,19 +1,21 @@
 #' Compute quality scores for genes and bulks
 #'
 #' @description
-#' Computes gene-specific and sample-specific quality scores: This function
-#' computes the mean relative residual and average bootstrap variance for each
-#' gene and each bulk sample.
+#' This function computes gene-specific and sample-specific quality scores.
+#' Specifically, it computes the mean relative residual and average bootstrap
+#' variance for each gene and each bulk sample.
 #'
-#' @param csre The total explained expression obtained by fitting the
-#'    ´sclibrary´ to the bulk tissue as given by `explained_expression()`.
-#' @param bulks A dataframe containing the gene expression of one bulk sample in
-#'    each column.
+#' @param csre The cell type specific expression (`csre`) obtained by
+#'    `specific_expression_regulation()`. Note that `csre` must include the
+#'    total explained gene expression to calculate the quality scores.
+#' @param bulks A matrix or dataframe containing the gene expression of bulk
+#'    samples in each column and genes in each row. Row names must match the
+#'   gene names in `csre`.
 #'
 #' @return A list of dataframes:
-#' - ´genes´: Contains quality scores by gene + mean gene-wise actual and
+#' - `genes`: Contains quality scores by gene + mean gene-wise actual and
 #'    explained total expression
-#' - ´bulks´: Contains quality scores to judge individual virtual tissues
+#' - `bulks`: Contains quality scores to judge individual virtual tissues
 #'
 #' @examples
 #' library(tibble)
