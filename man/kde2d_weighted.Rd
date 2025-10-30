@@ -9,7 +9,7 @@ kde2d_weighted(
   y,
   weight,
   bandwidth = NULL,
-  n_grid = 25,
+  n.grid = 25,
   lims = c(range(x), range(y))
 )
 }
@@ -24,7 +24,7 @@ kde2d_weighted(
 density estimate. A numeric vector with length of 2. Defaults to
 \code{c(MASS::bandwidth.nrd(x), MASS::bandwidth.nrd(y))/4}.}
 
-\item{n_grid}{The integer number of grid points used for plotting. Defaults
+\item{n.grid}{The integer number of grid points used for plotting. Defaults
 to \code{25}.}
 
 \item{lims}{The numeric vector with a length of 4 \code{c(lower(x), upper(x), lower(y), upper(y))}, range of the plot, allowing to plot a subframe of

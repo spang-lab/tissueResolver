@@ -8,8 +8,15 @@
 # ############################# load packages ####################################
 # ################################################################################
 
+# install version 1.0.0 of tissueResolver
+# library(devtools)
+# devtools::install_github(
+#   "git@github.com:spang-lab/tissueResolver.git",
+#   ref = "v1.0.0", dependencies = TRUE
+# )
+
 # # load original tissueResolver package
-# library(tissueResolver) # This should be version 1.0.0
+# library(tissueResolver) # This must be version 1.0.0
 # # load other required packages
 # library(dplyr)
 # library(purrr)

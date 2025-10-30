@@ -7,7 +7,7 @@
 #' @param x The numeric x coordinate of the embedding.
 #' @param y The numeric y coordinate of the embedding.
 #' @param weight The numeric weight for each data point.
-#' @param n_grid The integer number of grid points used for plotting. Defaults
+#' @param n.grid The integer number of grid points used for plotting. Defaults
 #'    to `25`.
 #' @param lims The numeric vector with a length of 4 `c(lower(x), upper(x),
 #'    lower(y), upper(y))`, range of the plot, allowing to plot a subframe of
@@ -66,7 +66,7 @@ kde2d_weighted <- function(
   y,
   weight,
   bandwidth = NULL,
-  n_grid = 25,
+  n.grid = 25,
   lims = c(range(x), range(y))
 ) {
 
@@ -80,8 +80,8 @@ kde2d_weighted <- function(
     stop("In 'kde2d_weighted': 'length(x)' and 'length(weight)' differ.")
   }
 
-  grid_x <- seq(from = lims[1], to = lims[2], length = n_grid)
-  grid_y <- seq(from = lims[3], to = lims[4], length = n_grid)
+  grid_x <- seq(from = lims[1], to = lims[2], length = n.grid)
+  grid_y <- seq(from = lims[3], to = lims[4], length = n.grid)
 
   if (is.null(bandwidth)) {
     bandwidth <- c(MASS::bandwidth.nrd(x), MASS::bandwidth.nrd(y)) / 4
@@ -94,15 +94,15 @@ kde2d_weighted <- function(
 
   # weight matrix
   left_mat <- matrix(
-    rep(weight, n_grid),
-    nrow = n_grid,
+    rep(weight, n.grid),
+    nrow = n.grid,
     ncol = n_x,
     byrow = TRUE
   )
 
   # matrices for the kernel
-  middle_mat <- matrix(stats::dnorm(distance_x), n_grid, n_x)
-  right_mat <- matrix(stats::dnorm(distance_y), n_grid, n_x)
+  middle_mat <- matrix(stats::dnorm(distance_x), n.grid, n_x)
+  right_mat <- matrix(stats::dnorm(distance_y), n.grid, n_x)
 
   # weighted kde differs from classical kde by multiplying the kernel with
   # weight matrix and dividing by the cumulated weights. For classical kde,
@@ -113,8 +113,8 @@ kde2d_weighted <- function(
 
   # the returned dataframe stores the grid coordinates and the weighted kde
   ret <- data.frame(
-    x = rep(grid_x, n_grid),
-    y = rep(grid_y, each = n_grid),
+    x = rep(grid_x, n.grid),
+    y = rep(grid_y, each = n.grid),
     z = as.vector(z)
   )
   return(ret)
@@ -397,7 +397,8 @@ density_distribution <- function(
         y = scembedding[[y]],
         weight = weights_for_all_cells
       )) %>%
-      dplyr::mutate(group = groupid))
+        dplyr::mutate(group = groupid)
+    )
   }
   return(densities)
 
@@ -622,9 +623,9 @@ plot_element_differential_density <- function(
 #'    red, if weights are larger than in `groupB`.
 #' @param groupB The name of the group with negative weights. These are colored
 #'    blue, if weights are larger than in `groupA`.
-#' @param embedding_x The column name of the x coordinate for the 2D embedding
+#' @param embedding.x The column name of the x coordinate for the 2D embedding
 #'    in `scembedding`. Defaults to `"UMAP1"`.
-#' @param embedding_y The column name of the y coordinate for the 2D embedding
+#' @param embedding.y The column name of the y coordinate for the 2D embedding
 #'    in `scembedding`. Defaults to `"UMAP2"`.
 #' @param colourby defaults to `NULL`. If column name is provided, colour the
 #'    single cells by this column of `scembedding` (e.g., celltype).
@@ -665,8 +666,8 @@ plot_element_differential_density <- function(
 #'   scembedding,
 #'   groupA = "bgroup_1",
 #'   groupB = "bgroup_2",
-#'   embedding_x = "UMAP1",
-#'   embedding_y = "UMAP2",
+#'   embedding.x = "UMAP1",
+#'   embedding.y = "UMAP2",
 #'   colourby = "c.type"
 #' )
 #'
@@ -679,8 +680,8 @@ plot_differential_densities <- function(
   scembedding = NULL,
   groupA = NA,
   groupB = NA,
-  embedding_x = "UMAP1",
-  embedding_y = "UMAP2",
+  embedding.x = "UMAP1",
+  embedding.y = "UMAP2",
   colourby = NULL
 ) {
 
@@ -705,7 +706,7 @@ plot_differential_densities <- function(
   # according to the single cell embedding
   if (!is.null(scembedding)) {
     embedding <- plot_element_embedding(
-      scembedding, embedding_x, embedding_y, colourby
+      scembedding, embedding.x, embedding.y, colourby
     )
   } else {
     embedding <- NULL

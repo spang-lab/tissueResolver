@@ -9,8 +9,8 @@ plot_differential_densities(
   scembedding = NULL,
   groupA = NA,
   groupB = NA,
-  embedding_x = "UMAP1",
-  embedding_y = "UMAP2",
+  embedding.x = "UMAP1",
+  embedding.y = "UMAP2",
   colourby = NULL
 )
 }
@@ -27,10 +27,10 @@ red, if weights are larger than in \code{groupB}.}
 \item{groupB}{The name of the group with negative weights. These are colored
 blue, if weights are larger than in \code{groupA}.}
 
-\item{embedding_x}{The column name of the x coordinate for the 2D embedding
+\item{embedding.x}{The column name of the x coordinate for the 2D embedding
 in \code{scembedding}. Defaults to \code{"UMAP1"}.}
 
-\item{embedding_y}{The column name of the y coordinate for the 2D embedding
+\item{embedding.y}{The column name of the y coordinate for the 2D embedding
 in \code{scembedding}. Defaults to \code{"UMAP2"}.}
 
 \item{colourby}{defaults to \code{NULL}. If column name is provided, colour the
@@ -80,8 +80,8 @@ differential_densities <- plot_differential_densities(
   scembedding,
   groupA = "bgroup_1",
   groupB = "bgroup_2",
-  embedding_x = "UMAP1",
-  embedding_y = "UMAP2",
+  embedding.x = "UMAP1",
+  embedding.y = "UMAP2",
   colourby = "c.type"
 )
 
