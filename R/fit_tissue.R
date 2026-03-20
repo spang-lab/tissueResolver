@@ -284,6 +284,7 @@ fit_tissue <- function(
   # initialize counters for warnings and maxit reached
   n_maxit <- 0
   n_warn <- 0
+  nruns <- ncol(bulkdata)
 
   # for bootstrapping
   if (bootstrap == TRUE) {
@@ -367,8 +368,6 @@ fit_tissue <- function(
 
   } else {
     # no bootstrapping
-
-    nruns <- ncol(bulkdata)
     result <- fit_tissue_noboot(
       bulkdata,
       sclibrary,
